@@ -36,10 +36,10 @@ public final class OpenMovieJsonUtils {
             String releaseDate = movie.getString(RELEASE_DATE);
 
             parsedMovieData[i] = posterPath
-                    + "-" + originalTitle
-                    + "-" + overview
-                    + "-" + voteAverage
-                    + "-" + releaseDate;
+                    + " - " + originalTitle
+                    + " - " + overview
+                    + " - " + voteAverage
+                    + " - " + releaseDate;
         }
 
         return parsedMovieData;
