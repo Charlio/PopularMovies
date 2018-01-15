@@ -9,6 +9,7 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -26,7 +27,6 @@ public class MainActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<String[]> {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    // loader id as the input into LoaderManager to get the movie loader
     private static final int MOVIE_LOADER_ID = 0;
     private static final int SORT_BY_POPULARITY = 0;
     private static final int SORT_BY_RATING = 1;
@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements
         mSortById = SORT_BY_POPULARITY;
 
         mRecyclerView = findViewById(R.id.recyclerview_movie);
-        int numberOfColumns = 2;
+        int numberOfColumns = getNumberOfColumns();
         GridLayoutManager layoutManager
                 = new GridLayoutManager(this, numberOfColumns);
         mRecyclerView.setLayoutManager(layoutManager);
@@ -56,6 +56,13 @@ public class MainActivity extends AppCompatActivity implements
         mRecyclerView.setAdapter(mMovieAdapter);
 
         getSupportLoaderManager().initLoader(MOVIE_LOADER_ID, null, this);
+    }
+
+    private int getNumberOfColumns() {
+        DisplayMetrics displayMetrics = this.getResources().getDisplayMetrics();
+        float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
+        int scalingFactor = 180;
+        return (int) (dpWidth / scalingFactor);
     }
 
     @Override

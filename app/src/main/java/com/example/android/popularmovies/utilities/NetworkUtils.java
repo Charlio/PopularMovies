@@ -4,6 +4,8 @@ import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.example.android.popularmovies.BuildConfig;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -37,8 +39,7 @@ public final class NetworkUtils {
 
     private static final String API_KEY_QUERY = "api_key";
 
-    private static final String API_KEY =
-            "4605ddbbddc8480f1c3aa209c62cd198";
+    private static final String API_KEY = BuildConfig.MY_API_KEY;
 
     @Nullable
     public static Uri buildMoviePosterUrl(String imageRelativePath) {

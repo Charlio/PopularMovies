@@ -1,5 +1,11 @@
 apply plugin: 'com.android.application'
 
+def getMyApiKey(String property){
+    Properties properties = new Properties()
+    properties.load(new FileInputStream("C:\\Users\\chali\\api\\movie_api_key.txt"))
+    return "\"" + properties.getProperty(property) +"\""
+}
+
 android {
     compileSdkVersion 26
     defaultConfig {
@@ -9,6 +15,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        buildConfigField "String", "MY_API_KEY", getMyApiKey("myApiKey")
     }
     buildTypes {
         release {

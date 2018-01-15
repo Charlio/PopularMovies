@@ -20,7 +20,7 @@ public final class OpenMovieJsonUtils {
         final String VOTE_AVERAGE = "vote_average";
         final String RELEASE_DATE = "release_date";
 
-        String[] parsedMovieData = null;
+        String[] parsedMovieData;
 
         JSONObject movieJson = new JSONObject(movieJsonString);
         JSONArray movieArray = movieJson.getJSONArray(MOVIE_LIST);
@@ -36,10 +36,10 @@ public final class OpenMovieJsonUtils {
             String releaseDate = movie.getString(RELEASE_DATE);
 
             parsedMovieData[i] = posterPath
-                    + " - " + originalTitle
-                    + " - " + overview
-                    + " - " + voteAverage
-                    + " - " + releaseDate;
+                    + "-" + originalTitle
+                    + "-" + overview
+                    + "-" + voteAverage
+                    + "-" + releaseDate;
         }
 
         return parsedMovieData;

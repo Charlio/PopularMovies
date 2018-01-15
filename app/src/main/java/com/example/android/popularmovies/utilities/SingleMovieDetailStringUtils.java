@@ -7,11 +7,11 @@ package com.example.android.popularmovies.utilities;
 public final class SingleMovieDetailStringUtils {
     public static String getPosterRelativePath(String singleMoviedata) {
         int pos = singleMoviedata.indexOf('-');
-        String relativePath = singleMoviedata.substring(0, pos - 1);
+        String relativePath = singleMoviedata.substring(0, pos);
         return relativePath;
     }
 
     public static String[] getMovieData(String singleMovieData) {
-        return singleMovieData.split(" - ", 5);
+        return singleMovieData.split("-", 5);
     }
 }
