@@ -1,10 +1,13 @@
 package com.example.android.popularmovies;
 
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,7 +19,6 @@ import android.widget.TextView;
 import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.example.android.popularmovies.utilities.OpenMovieJsonUtils;
 
-import java.io.IOException;
 import java.net.URL;
 
 public class MainActivity extends AppCompatActivity implements
@@ -24,47 +26,41 @@ public class MainActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<String[]> {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-
-    private TextView mMovieSearchUrl;
-    private TextView mMovieResultsJsonDisplay;
-
-    private RecyclerView mRecyclerView;
-
-    private MovieAdapter mMovieAdapter;
-
-    private TextView mErrorMessageDisplay;
-
-    private ProgressBar mLoadingIndicator;
-
     // loader id as the input into LoaderManager to get the movie loader
     private static final int MOVIE_LOADER_ID = 0;
-
     private static final int SORT_BY_POPULARITY = 0;
     private static final int SORT_BY_RATING = 1;
-    private int mSortById;
-
     private static final String SEARCH_QUERY_SORT_METHOD_EXTRA = "sort";
+    private RecyclerView mRecyclerView;
+    private MovieAdapter mMovieAdapter;
+    private TextView mErrorMessageDisplay;
+    private ProgressBar mLoadingIndicator;
+    private int mSortById;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mErrorMessageDisplay = findViewById(R.id.tv_error_message_display);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
         mSortById = SORT_BY_POPULARITY;
 
-        mMovieSearchUrl = findViewById(R.id.url_display);
-        mMovieResultsJsonDisplay = findViewById(R.id.movie_result_json_display);
-        // TODO find views and assign to variables
-
-        //TODO setup GridLayoutManager and MovieAdapter for mRecyclerView
+        mRecyclerView = findViewById(R.id.recyclerview_movie);
+        int numberOfColumns = 2;
+        GridLayoutManager layoutManager
+                = new GridLayoutManager(this, numberOfColumns);
+        mRecyclerView.setLayoutManager(layoutManager);
+        mRecyclerView.setHasFixedSize(true);
+        mMovieAdapter = new MovieAdapter(this, this);
+        mRecyclerView.setAdapter(mMovieAdapter);
 
         getSupportLoaderManager().initLoader(MOVIE_LOADER_ID, null, this);
     }
 
     @Override
     public Loader<String[]> onCreateLoader(int i, final Bundle queryBundle) {
-        //TODO
+
         return new AsyncTaskLoader<String[]>(this) {
 
             String[] mParsedMovieResults;
@@ -113,10 +109,10 @@ public class MainActivity extends AppCompatActivity implements
         if (parsedMovieResults == null) {
             showErrorMessage();
         } else {
-            for (int i = 0; i < parsedMovieResults.length; i++) {
-                mMovieResultsJsonDisplay.append(parsedMovieResults[i] + "\n\n\n");
-            }
+            showMovieDataView();
+            mMovieAdapter.setMovieData(parsedMovieResults);
         }
+
     }
 
     @Override
@@ -125,12 +121,17 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onClick() {
-        //TODO
+    public void onClick(String singleMoviedata) {
+        Context context = this;
+        Class destinationClass = DetailActivity.class;
+        Intent intentToStartDetailActivity = new Intent(context, destinationClass);
+        intentToStartDetailActivity.putExtra(Intent.EXTRA_TEXT, singleMoviedata);
+        startActivity(intentToStartDetailActivity);
+
     }
 
     private void invalidateData() {
-        mMovieResultsJsonDisplay.setText("");
+        mMovieAdapter.setMovieData(null);
     }
 
     private void fetchMovieData() {

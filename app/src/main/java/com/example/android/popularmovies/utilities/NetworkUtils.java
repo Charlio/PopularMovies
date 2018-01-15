@@ -17,26 +17,21 @@ import java.util.Scanner;
 
 public final class NetworkUtils {
 
-    private static final String TAG = NetworkUtils.class.getSimpleName();
+    public static final int SORT_ID_POPULARITY = 0;
     /*
      * Example movie poster url: http://image.tmdb.org/t/p/w185//nBNZadXqJSdt05SHLqgT0HuC5Gm.jpg
      */
-
-    private static final String BASE_MOVIE_IMAGE_URL =
-            "http://image.tmdb.org/t/p/";
-
-    private static final String POSTER_SIZE = "w185/";
+    public static final int SORT_ID_RATING = 1;
+    private static final String TAG = NetworkUtils.class.getSimpleName();
 
     /*
      * Example movie data url: http://api.themoviedb.org/3/movie/popular?api_key=[YOUR_API_KEY]
      */
-
+    private static final String BASE_MOVIE_IMAGE_URL =
+            "http://image.tmdb.org/t/p/";
+    private static final String POSTER_SIZE = "w185/";
     private static final String BASE_MOVIE_DATA_URL =
             "http://api.themoviedb.org/3/movie/";
-
-    private static final int SORT_ID_POPULARITY = 0;
-    private static final int SORT_ID_RATING = 1;
-
     private static final String SORT_BY_POPULARITY = "popular";
     private static final String SORT_BY_RATING = "top_rated";
 
@@ -46,18 +41,15 @@ public final class NetworkUtils {
             "4605ddbbddc8480f1c3aa209c62cd198";
 
     @Nullable
-    public static URL buildMoviePosterUrl(String imageRelativePath) {
-        String fullImagePath = BASE_MOVIE_IMAGE_URL + imageRelativePath;
-        URL url = null;
-        try {
-            url = new URL(fullImagePath);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+    public static Uri buildMoviePosterUrl(String imageRelativePath) {
+        Uri builtUri = null;
+        if (imageRelativePath != null) {
+            builtUri = Uri.parse(BASE_MOVIE_IMAGE_URL + POSTER_SIZE + imageRelativePath);
         }
 
-        Log.v(TAG, "Built movie poster image URL " + url);
+        Log.v(TAG, "Built movie poster image URL " + builtUri);
 
-        return url;
+        return builtUri;
     }
 
     @Nullable
