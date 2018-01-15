@@ -1,7 +1,8 @@
 package com.example.android.popularmovies;
 
-import android.app.LoaderManager;
-import android.content.Loader;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
@@ -12,13 +13,18 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
+import com.example.android.popularmovies.utilities.NetworkUtils;
+
+import java.io.IOException;
+import java.net.URL;
 
 public class MainActivity extends AppCompatActivity implements
         MovieAdapter.MovieAdapterOnClickHandler,
-        LoaderManager.LoaderCallbacks<String[]> {
+        LoaderManager.LoaderCallbacks<String> {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+
+    private TextView mMovieResultsJsonDisplay;
 
     private RecyclerView mRecyclerView;
 
@@ -33,33 +39,81 @@ public class MainActivity extends AppCompatActivity implements
 
     private static final int SORT_BY_POPULARITY = 0;
     private static final int SORT_BY_RATING = 1;
+    private int mSortById;
+
+    private static final String SEARCH_QUERY_SORT_METHOD_EXTRA = "sort";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
+        mSortById = SORT_BY_POPULARITY;
+        mMovieResultsJsonDisplay = findViewById(R.id.movie_result_json_display);
         // TODO find views and assign to variables
 
         //TODO setup GridLayoutManager and MovieAdapter for mRecyclerView
 
-        //TODO initialize loader manager
+        getSupportLoaderManager().initLoader(MOVIE_LOADER_ID, null, this);
     }
 
     @Override
-    public Loader<String[]> onCreateLoader(int i, Bundle bundle) {
+    public Loader<String> onCreateLoader(int i, final Bundle queryBundle) {
         //TODO
-        return null;
+        return new AsyncTaskLoader<String>(this) {
+
+            String mMovieResultJson;
+
+            @Override
+            protected void onStartLoading() {
+                mLoadingIndicator.setVisibility(View.VISIBLE);
+                if (mMovieResultJson != null) {
+                    deliverResult(mMovieResultJson);
+                } else {
+                    forceLoad();
+                }
+            }
+
+            @Override
+            public String loadInBackground() {
+                int sortById;
+                if (queryBundle == null) {
+                    sortById = SORT_BY_POPULARITY;
+                } else {
+                    sortById = queryBundle.getInt(SEARCH_QUERY_SORT_METHOD_EXTRA);
+                }
+                URL searchQueryUrl = NetworkUtils.buildMovieDataUrl(sortById);
+                try {
+                    String movieResultJson = NetworkUtils.getResponseFromHttpUrl(searchQueryUrl);
+                    return movieResultJson;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+
+            @Override
+            public void deliverResult(String movieResulsJson) {
+                mMovieResultJson = movieResulsJson;
+                super.deliverResult(movieResulsJson);
+            }
+        };
     }
 
     @Override
-    public void onLoadFinished(Loader<String[]> loader, String[] strings) {
-        //TODO
+    public void onLoadFinished(Loader<String> loader, String data) {
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
+        if (data == null) {
+            showErrorMessage();
+        } else {
+            mMovieResultsJsonDisplay.setText(data);
+        }
     }
 
     @Override
-    public void onLoaderReset(Loader<String[]> loader) {
-        //TODO
+    public void onLoaderReset(Loader<String> loader) {
+
     }
 
     @Override
@@ -72,7 +126,17 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void fetchMovieData(int sortby) {
-        //TODO
+        Bundle queryBundle = new Bundle();
+        queryBundle.putInt(SEARCH_QUERY_SORT_METHOD_EXTRA, sortby);
+
+        LoaderManager loaderManager = getSupportLoaderManager();
+        Loader<String> movieSearchLoader = loaderManager.getLoader(MOVIE_LOADER_ID);
+        if (movieSearchLoader == null) {
+            loaderManager.initLoader(MOVIE_LOADER_ID, queryBundle, this);
+        } else {
+            loaderManager.restartLoader(MOVIE_LOADER_ID, queryBundle, this);
+        }
+
     }
 
     private void showMovieDataView() {
@@ -110,4 +174,5 @@ public class MainActivity extends AppCompatActivity implements
 
         return super.onOptionsItemSelected(item);
     }
+
 }
