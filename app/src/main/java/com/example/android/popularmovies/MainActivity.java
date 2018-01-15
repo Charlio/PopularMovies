@@ -14,16 +14,18 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.android.popularmovies.utilities.NetworkUtils;
+import com.example.android.popularmovies.utilities.OpenMovieJsonUtils;
 
 import java.io.IOException;
 import java.net.URL;
 
 public class MainActivity extends AppCompatActivity implements
         MovieAdapter.MovieAdapterOnClickHandler,
-        LoaderManager.LoaderCallbacks<String> {
+        LoaderManager.LoaderCallbacks<String[]> {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
+    private TextView mMovieSearchUrl;
     private TextView mMovieResultsJsonDisplay;
 
     private RecyclerView mRecyclerView;
@@ -50,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements
 
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
         mSortById = SORT_BY_POPULARITY;
+
+        mMovieSearchUrl = findViewById(R.id.url_display);
         mMovieResultsJsonDisplay = findViewById(R.id.movie_result_json_display);
         // TODO find views and assign to variables
 
@@ -59,24 +63,24 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public Loader<String> onCreateLoader(int i, final Bundle queryBundle) {
+    public Loader<String[]> onCreateLoader(int i, final Bundle queryBundle) {
         //TODO
-        return new AsyncTaskLoader<String>(this) {
+        return new AsyncTaskLoader<String[]>(this) {
 
-            String mMovieResultJson;
+            String[] mParsedMovieResults;
 
             @Override
             protected void onStartLoading() {
                 mLoadingIndicator.setVisibility(View.VISIBLE);
-                if (mMovieResultJson != null) {
-                    deliverResult(mMovieResultJson);
+                if (mParsedMovieResults != null) {
+                    deliverResult(mParsedMovieResults);
                 } else {
                     forceLoad();
                 }
             }
 
             @Override
-            public String loadInBackground() {
+            public String[] loadInBackground() {
                 int sortById;
                 if (queryBundle == null) {
                     sortById = SORT_BY_POPULARITY;
@@ -86,33 +90,37 @@ public class MainActivity extends AppCompatActivity implements
                 URL searchQueryUrl = NetworkUtils.buildMovieDataUrl(sortById);
                 try {
                     String movieResultJson = NetworkUtils.getResponseFromHttpUrl(searchQueryUrl);
-                    return movieResultJson;
-                } catch (IOException e) {
+                    String[] parsedMovieResults
+                            = OpenMovieJsonUtils.getSimpleMovieStringsFromJson(movieResultJson);
+                    return parsedMovieResults;
+                } catch (Exception e) {
                     e.printStackTrace();
                     return null;
                 }
             }
 
             @Override
-            public void deliverResult(String movieResulsJson) {
-                mMovieResultJson = movieResulsJson;
-                super.deliverResult(movieResulsJson);
+            public void deliverResult(String[] parsedMovieResuls) {
+                mParsedMovieResults = parsedMovieResuls;
+                super.deliverResult(parsedMovieResuls);
             }
         };
     }
 
     @Override
-    public void onLoadFinished(Loader<String> loader, String data) {
+    public void onLoadFinished(Loader<String[]> loader, String[] parsedMovieResults) {
         mLoadingIndicator.setVisibility(View.INVISIBLE);
-        if (data == null) {
+        if (parsedMovieResults == null) {
             showErrorMessage();
         } else {
-            mMovieResultsJsonDisplay.setText(data);
+            for (int i = 0; i < parsedMovieResults.length; i++) {
+                mMovieResultsJsonDisplay.append(parsedMovieResults[i] + "\n\n\n");
+            }
         }
     }
 
     @Override
-    public void onLoaderReset(Loader<String> loader) {
+    public void onLoaderReset(Loader<String[]> loader) {
 
     }
 
@@ -122,12 +130,12 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void invalidateData() {
-        //TODO
+        mMovieResultsJsonDisplay.setText("");
     }
 
-    private void fetchMovieData(int sortby) {
+    private void fetchMovieData() {
         Bundle queryBundle = new Bundle();
-        queryBundle.putInt(SEARCH_QUERY_SORT_METHOD_EXTRA, sortby);
+        queryBundle.putInt(SEARCH_QUERY_SORT_METHOD_EXTRA, mSortById);
 
         LoaderManager loaderManager = getSupportLoaderManager();
         Loader<String> movieSearchLoader = loaderManager.getLoader(MOVIE_LOADER_ID);
@@ -162,13 +170,15 @@ public class MainActivity extends AppCompatActivity implements
 
         if (id == R.id.action_sort_popular) {
             invalidateData();
-            fetchMovieData(SORT_BY_POPULARITY);
+            mSortById = SORT_BY_POPULARITY;
+            fetchMovieData();
             return true;
         }
 
         if (id == R.id.action_sort_rating) {
             invalidateData();
-            fetchMovieData(SORT_BY_RATING);
+            mSortById = SORT_BY_RATING;
+            fetchMovieData();
             return true;
         }
 
