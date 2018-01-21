@@ -17,14 +17,16 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.example.android.popularmovies.data.Movie;
 import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.example.android.popularmovies.utilities.OpenMovieJsonUtils;
 
 import java.net.URL;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements
         MovieAdapter.MovieAdapterOnClickHandler,
-        LoaderManager.LoaderCallbacks<String[]> {
+        LoaderManager.LoaderCallbacks<ArrayList<Movie>> {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int MOVIE_LOADER_ID = 0;
@@ -36,6 +38,8 @@ public class MainActivity extends AppCompatActivity implements
     private TextView mErrorMessageDisplay;
     private ProgressBar mLoadingIndicator;
     private int mSortById;
+
+    // TODO create a variable to indicate whether to fetch data from api or database: mFetchFromAPI
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements
         mRecyclerView.setAdapter(mMovieAdapter);
 
         getSupportLoaderManager().initLoader(MOVIE_LOADER_ID, null, this);
+
     }
 
     private int getNumberOfColumns() {
@@ -66,11 +71,11 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public Loader<String[]> onCreateLoader(int i, final Bundle queryBundle) {
+    public Loader<ArrayList<Movie>> onCreateLoader(int i, final Bundle queryBundle) {
 
-        return new AsyncTaskLoader<String[]>(this) {
+        return new AsyncTaskLoader<ArrayList<Movie>>(this) {
 
-            String[] mParsedMovieResults;
+            ArrayList<Movie> mParsedMovieResults;
 
             @Override
             protected void onStartLoading() {
@@ -83,8 +88,11 @@ public class MainActivity extends AppCompatActivity implements
             }
 
             @Override
-            public String[] loadInBackground() {
+            public ArrayList<Movie> loadInBackground() {
                 int sortById;
+
+                // TODO check mFetchFromAPI, add code for qeury favoriate list from database
+
                 if (queryBundle == null) {
                     sortById = SORT_BY_POPULARITY;
                 } else {
@@ -93,7 +101,7 @@ public class MainActivity extends AppCompatActivity implements
                 URL searchQueryUrl = NetworkUtils.buildMovieDataUrl(sortById);
                 try {
                     String movieResultJson = NetworkUtils.getResponseFromHttpUrl(searchQueryUrl);
-                    String[] parsedMovieResults
+                    ArrayList<Movie> parsedMovieResults
                             = OpenMovieJsonUtils.getSimpleMovieStringsFromJson(movieResultJson);
                     return parsedMovieResults;
                 } catch (Exception e) {
@@ -103,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements
             }
 
             @Override
-            public void deliverResult(String[] parsedMovieResuls) {
+            public void deliverResult(ArrayList<Movie> parsedMovieResuls) {
                 mParsedMovieResults = parsedMovieResuls;
                 super.deliverResult(parsedMovieResuls);
             }
@@ -111,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onLoadFinished(Loader<String[]> loader, String[] parsedMovieResults) {
+    public void onLoadFinished(Loader<ArrayList<Movie>> loader, ArrayList<Movie> parsedMovieResults) {
         mLoadingIndicator.setVisibility(View.INVISIBLE);
         if (parsedMovieResults == null) {
             showErrorMessage();
@@ -123,19 +131,21 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onLoaderReset(Loader<String[]> loader) {
+    public void onLoaderReset(Loader<ArrayList<Movie>> loader) {
 
     }
 
     @Override
-    public void onClick(String singleMoviedata) {
+    public void onClick(Movie singleMoviedata) {
         Context context = this;
         Class destinationClass = DetailActivity.class;
         Intent intentToStartDetailActivity = new Intent(context, destinationClass);
-        intentToStartDetailActivity.putExtra(Intent.EXTRA_TEXT, singleMoviedata);
+        intentToStartDetailActivity.putExtra("parcel_data", singleMoviedata);
         startActivity(intentToStartDetailActivity);
 
     }
+
+    // TODO add a method to create ArrayList<Movie> from Cursor, used in loadInBackground in onCreateLoader
 
     private void invalidateData() {
         mMovieAdapter.setMovieData(null);
@@ -189,6 +199,8 @@ public class MainActivity extends AppCompatActivity implements
             fetchMovieData();
             return true;
         }
+
+        // TODO change to switch, add option on displaying favorite list
 
         return super.onOptionsItemSelected(item);
     }

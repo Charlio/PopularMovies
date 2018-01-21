@@ -8,8 +8,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.android.popularmovies.data.Movie;
 import com.example.android.popularmovies.utilities.NetworkUtils;
-import com.example.android.popularmovies.utilities.SingleMovieDetailStringUtils;
 import com.squareup.picasso.Picasso;
 
 /**
@@ -18,13 +18,15 @@ import com.squareup.picasso.Picasso;
 
 public class DetailActivity extends AppCompatActivity {
 
-    private String mSingleMovieData;
-
     private TextView mMovieTitle;
     private TextView mMovieReleaseDate;
     private ImageView mMoviePoster;
     private TextView mMovieVoteAverage;
     private TextView mMoviePlotSynopsis;
+
+    // TODO add favorite button, trailer link, reviews
+
+    // TODO onclick favorite button, trigger database insert and deselect to delete
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -37,20 +39,18 @@ public class DetailActivity extends AppCompatActivity {
         mMovieVoteAverage = findViewById(R.id.movie_vote_average);
         mMoviePlotSynopsis = findViewById(R.id.movie_plot_synopsis);
 
-        Intent intentStartedThisActivity = getIntent();
-        if (intentStartedThisActivity != null
-                && intentStartedThisActivity.hasExtra(Intent.EXTRA_TEXT)) {
-            mSingleMovieData = intentStartedThisActivity.getStringExtra(Intent.EXTRA_TEXT);
+        Intent intentStartedActivity = getIntent();
+
+        if (intentStartedActivity.hasExtra("parcel_data")) {
+            Movie mSingleMovieData = intentStartedActivity.getParcelableExtra("parcel_data");
+
+            Uri posterUri = NetworkUtils.buildMoviePosterUrl(mSingleMovieData.getPosterRelativePath());
+            Picasso.with(this).load(posterUri).into(mMoviePoster);
+            mMovieTitle.setText(mSingleMovieData.getOriginalTitle());
+            mMoviePlotSynopsis.setText(mSingleMovieData.getOverview());
+            mMovieVoteAverage.setText(Double.toString(mSingleMovieData.getVoteAverage()));
+            mMovieReleaseDate.setText(mSingleMovieData.getReleaseDate());
+
         }
-
-        String[] movieData = SingleMovieDetailStringUtils.getMovieData(mSingleMovieData);
-
-        Uri posterUri = NetworkUtils.buildMoviePosterUrl(movieData[0]);
-        Picasso.with(this).load(posterUri).into(mMoviePoster);
-        mMovieTitle.setText(movieData[1]);
-        mMoviePlotSynopsis.setText(movieData[2]);
-        mMovieVoteAverage.setText(movieData[3]);
-        mMovieReleaseDate.setText(movieData[4]);
-
     }
 }

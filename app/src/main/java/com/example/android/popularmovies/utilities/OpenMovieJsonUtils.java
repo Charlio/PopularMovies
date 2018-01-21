@@ -1,15 +1,19 @@
 package com.example.android.popularmovies.utilities;
 
+import com.example.android.popularmovies.data.Movie;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 /**
  * Created by chali on 1/14/2018.
  */
 
 public final class OpenMovieJsonUtils {
-    public static String[] getSimpleMovieStringsFromJson(String movieJsonString)
+    public static ArrayList<Movie> getSimpleMovieStringsFromJson(String movieJsonString)
             throws JSONException {
         final String MOVIE_LIST = "results";
 
@@ -20,26 +24,24 @@ public final class OpenMovieJsonUtils {
         final String VOTE_AVERAGE = "vote_average";
         final String RELEASE_DATE = "release_date";
 
-        String[] parsedMovieData;
+        ArrayList<Movie> parsedMovieData;
 
         JSONObject movieJson = new JSONObject(movieJsonString);
         JSONArray movieArray = movieJson.getJSONArray(MOVIE_LIST);
-        parsedMovieData = new String[movieArray.length()];
+        parsedMovieData = new ArrayList<>();
 
         for (int i = 0; i < movieArray.length(); i++) {
-            JSONObject movie = movieArray.getJSONObject(i);
+            JSONObject movieObject = movieArray.getJSONObject(i);
 
-            String posterPath = movie.getString(POSTER_PATH);
-            String originalTitle = movie.getString(ORIGINAL_TITLE);
-            String overview = movie.getString(OVERVIEW);
-            String voteAverage = Double.toString(movie.getDouble(VOTE_AVERAGE));
-            String releaseDate = movie.getString(RELEASE_DATE);
+            String posterPath = movieObject.getString(POSTER_PATH);
+            String originalTitle = movieObject.getString(ORIGINAL_TITLE);
+            String overview = movieObject.getString(OVERVIEW);
+            double voteAverage = movieObject.getDouble(VOTE_AVERAGE);
+            String releaseDate = movieObject.getString(RELEASE_DATE);
 
-            parsedMovieData[i] = posterPath
-                    + "-" + originalTitle
-                    + "-" + overview
-                    + "-" + voteAverage
-                    + "-" + releaseDate;
+            Movie movie = new Movie(posterPath, originalTitle, overview, voteAverage, releaseDate);
+
+            parsedMovieData.add(movie);
         }
 
         return parsedMovieData;

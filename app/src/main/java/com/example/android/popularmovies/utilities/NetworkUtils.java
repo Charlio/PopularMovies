@@ -83,7 +83,6 @@ public final class NetworkUtils {
             InputStream in = urlConnection.getInputStream();
             Scanner scanner = new Scanner(in);
 
-            //TODO check correctness of delimiter used
             scanner.useDelimiter("\\A");
 
             boolean hasInput = scanner.hasNext();

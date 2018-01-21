@@ -8,9 +8,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.example.android.popularmovies.data.Movie;
 import com.example.android.popularmovies.utilities.NetworkUtils;
-import com.example.android.popularmovies.utilities.SingleMovieDetailStringUtils;
 import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
 
 /**
  * Created by chali on 1/14/2018.
@@ -20,7 +22,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
 
     private final Context context;
     private final MovieAdapterOnClickHandler mClickHandler;
-    private String[] mMovieData;
+    private ArrayList<Movie> mMovieData;
 
     public MovieAdapter(Context context, MovieAdapterOnClickHandler clickHandler) {
         this.context = context;
@@ -40,8 +42,8 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
 
     @Override
     public void onBindViewHolder(MovieAdapterViewHolder holder, int position) {
-        String singleMovieData = mMovieData[position];
-        String posterRelativePath = SingleMovieDetailStringUtils.getPosterRelativePath(singleMovieData);
+        Movie singleMovieData = mMovieData.get(position);
+        String posterRelativePath = singleMovieData.getPosterRelativePath();
         Uri posterUri = NetworkUtils.buildMoviePosterUrl(posterRelativePath);
         Picasso.with(context).load(posterUri).into(holder.mPosterImageView);
     }
@@ -51,17 +53,17 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
         if (mMovieData == null) {
             return 0;
         } else {
-            return mMovieData.length;
+            return mMovieData.size();
         }
     }
 
-    public void setMovieData(String[] movieData) {
+    public void setMovieData(ArrayList<Movie> movieData) {
         mMovieData = movieData;
         notifyDataSetChanged();
     }
 
     public interface MovieAdapterOnClickHandler {
-        void onClick(String singleMovieData);
+        void onClick(Movie singleMovieData);
     }
 
     public class MovieAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -76,7 +78,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
         @Override
         public void onClick(View view) {
             int adapterPosition = getAdapterPosition();
-            String singleMovieData = mMovieData[adapterPosition];
+            Movie singleMovieData = mMovieData.get(adapterPosition);
             mClickHandler.onClick(singleMovieData);
         }
     }
