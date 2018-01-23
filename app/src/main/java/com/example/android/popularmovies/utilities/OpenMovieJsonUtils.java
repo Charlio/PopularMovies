@@ -6,6 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.URL;
 import java.util.ArrayList;
 
 /**
@@ -13,7 +14,7 @@ import java.util.ArrayList;
  */
 
 public final class OpenMovieJsonUtils {
-    public static ArrayList<Movie> getSimpleMovieStringsFromJson(String movieJsonString)
+    public static ArrayList<Movie> getMoviesArrayListFromJsonString(String movieJsonString)
             throws JSONException {
         final String MOVIE_LIST = "results";
 
@@ -47,5 +48,17 @@ public final class OpenMovieJsonUtils {
         }
 
         return parsedMovieData;
+    }
+
+    public static ArrayList<URL> getSingleMovieVideosFromJsonString(String videosJsonString)
+            throws JSONException {
+        // TODO generate array list of videos urls
+        return null;
+    }
+
+    public static ArrayList<String> getSingleMovieReviewsFromJsonString(String reviewsJsonString)
+            throws JSONException {
+        // TODO generate array list of reviews strings
+        return null;
     }
 }

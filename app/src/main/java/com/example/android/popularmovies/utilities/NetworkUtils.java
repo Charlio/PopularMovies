@@ -20,15 +20,10 @@ import java.util.Scanner;
 public final class NetworkUtils {
 
     public static final int SORT_ID_POPULARITY = 0;
-    /*
-     * Example movie poster url: http://image.tmdb.org/t/p/w185//nBNZadXqJSdt05SHLqgT0HuC5Gm.jpg
-     */
+
     public static final int SORT_ID_RATING = 1;
     private static final String TAG = NetworkUtils.class.getSimpleName();
 
-    /*
-     * Example movie data url: http://api.themoviedb.org/3/movie/popular?api_key=[YOUR_API_KEY]
-     */
     private static final String BASE_MOVIE_IMAGE_URL =
             "http://image.tmdb.org/t/p/";
     private static final String POSTER_SIZE = "w185/";
@@ -37,10 +32,17 @@ public final class NetworkUtils {
     private static final String SORT_BY_POPULARITY = "popular";
     private static final String SORT_BY_RATING = "top_rated";
 
+    private static final String VIDEOS = "videos";
+    private static final String REVIEWS = "reviews";
+
     private static final String API_KEY_QUERY = "api_key";
 
     private static final String API_KEY = BuildConfig.MY_API_KEY;
 
+
+    /*
+     * Example movie poster url: http://image.tmdb.org/t/p/w185//nBNZadXqJSdt05SHLqgT0HuC5Gm.jpg
+     */
     @Nullable
     public static Uri buildMoviePosterUrl(String imageRelativePath) {
         Uri builtUri = null;
@@ -53,6 +55,9 @@ public final class NetworkUtils {
         return builtUri;
     }
 
+    /*
+     * Example movie data url: http://api.themoviedb.org/3/movie/popular?api_key=[YOUR_API_KEY]
+     */
     @Nullable
     public static URL buildMovieDataUrl(int sortId) {
         String sortBy;
@@ -61,7 +66,7 @@ public final class NetworkUtils {
         } else {
             sortBy = SORT_BY_RATING;
         }
-        Uri builtUri = Uri.parse(BASE_MOVIE_DATA_URL+sortBy).buildUpon()
+        Uri builtUri = Uri.parse(BASE_MOVIE_DATA_URL + sortBy).buildUpon()
                 .appendQueryParameter(API_KEY_QUERY, API_KEY)
                 .build();
 
@@ -73,6 +78,48 @@ public final class NetworkUtils {
         }
 
         Log.v(TAG, "Built movie data URL " + url);
+
+        return url;
+    }
+
+    /*
+     * Example movie videos url: http://api.themoviedb.org/3/movie/346364/videos?api_key=[YOUR_API_KEY]
+     */
+    @Nullable
+    public static URL buildMovieVideosUrl(int movieId) {
+        Uri builtUri = Uri.parse(BASE_MOVIE_DATA_URL + VIDEOS).buildUpon()
+                .appendQueryParameter(API_KEY_QUERY, API_KEY)
+                .build();
+
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        Log.v(TAG, "Built single movie's videos URL " + url);
+
+        return url;
+    }
+
+    /*
+     * Example movie reviews url: http://api.themoviedb.org/3/movie/346364/reviews?api_key=[YOUR_API_KEY]
+     */
+    @Nullable
+    public static URL buildMovieReviewsUrl(int movieId) {
+        Uri builtUri = Uri.parse(BASE_MOVIE_DATA_URL + REVIEWS).buildUpon()
+                .appendQueryParameter(API_KEY_QUERY, API_KEY)
+                .build();
+
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        Log.v(TAG, "Built single movie's reviews URL " + url);
 
         return url;
     }

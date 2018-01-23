@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements
     private MovieAdapter mMovieAdapter;
     private TextView mErrorMessageDisplay;
     private ProgressBar mLoadingIndicator;
-    private int mFetchById;
+    private int mFetchMethod;
 
 
     @Override
@@ -50,7 +50,13 @@ public class MainActivity extends AppCompatActivity implements
 
         mErrorMessageDisplay = findViewById(R.id.tv_error_message_display);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
-        mFetchById = SORT_BY_POPULARITY;
+
+        if (savedInstanceState != null &&
+                savedInstanceState.containsKey(SEARCH_QUERY_FETCH_METHOD_EXTRA)) {
+            mFetchMethod = savedInstanceState.getInt(SEARCH_QUERY_FETCH_METHOD_EXTRA);
+        } else {
+            mFetchMethod = SORT_BY_POPULARITY;
+        }
 
         mRecyclerView = findViewById(R.id.recyclerview_movie);
         int numberOfColumns = getNumberOfColumns();
@@ -61,18 +67,8 @@ public class MainActivity extends AppCompatActivity implements
         mMovieAdapter = new MovieAdapter(this, this);
         mRecyclerView.setAdapter(mMovieAdapter);
 
-        getSupportLoaderManager().initLoader(MOVIE_LOADER_ID, null, this);
+        fetchMovieData();
 
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // TODO not work, jump to sort by popularity, use onStart?
-        if (mFetchById == FETCH_BY_DATABASE) {
-            invalidateData();
-            fetchMovieData();
-        }
     }
 
     private int getNumberOfColumns() {
@@ -103,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements
             public ArrayList<Movie> loadInBackground() {
                 int fetchById;
 
+
                 if (queryBundle == null) {
                     fetchById = SORT_BY_POPULARITY;
                 } else {
@@ -127,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements
                     try {
                         String movieResultJson = NetworkUtils.getResponseFromHttpUrl(searchQueryUrl);
                         ArrayList<Movie> parsedMovieResults
-                                = OpenMovieJsonUtils.getSimpleMovieStringsFromJson(movieResultJson);
+                                = OpenMovieJsonUtils.getMoviesArrayListFromJsonString(movieResultJson);
                         return parsedMovieResults;
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -214,7 +211,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private void fetchMovieData() {
         Bundle queryBundle = new Bundle();
-        queryBundle.putInt(SEARCH_QUERY_FETCH_METHOD_EXTRA, mFetchById);
+        queryBundle.putInt(SEARCH_QUERY_FETCH_METHOD_EXTRA, mFetchMethod);
 
         LoaderManager loaderManager = getSupportLoaderManager();
         Loader<String> movieSearchLoader = loaderManager.getLoader(MOVIE_LOADER_ID);
@@ -250,17 +247,17 @@ public class MainActivity extends AppCompatActivity implements
         switch (id) {
             case R.id.action_sort_popular:
                 invalidateData();
-                mFetchById = SORT_BY_POPULARITY;
+                mFetchMethod = SORT_BY_POPULARITY;
                 fetchMovieData();
                 return true;
             case R.id.action_sort_rating:
                 invalidateData();
-                mFetchById = SORT_BY_RATING;
+                mFetchMethod = SORT_BY_RATING;
                 fetchMovieData();
                 return true;
             case R.id.action_favorite_list:
                 invalidateData();
-                mFetchById = FETCH_BY_DATABASE;
+                mFetchMethod = FETCH_BY_DATABASE;
                 fetchMovieData();
                 return true;
             default:
@@ -268,4 +265,15 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(SEARCH_QUERY_FETCH_METHOD_EXTRA, mFetchMethod);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        mFetchMethod = savedInstanceState.getInt(SEARCH_QUERY_FETCH_METHOD_EXTRA);
+    }
 }

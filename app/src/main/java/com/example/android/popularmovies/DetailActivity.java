@@ -58,12 +58,7 @@ public class DetailActivity extends AppCompatActivity {
         if (intentStartedActivity.hasExtra("parcel_data")) {
             mMovie = intentStartedActivity.getParcelableExtra("parcel_data");
 
-            Uri posterUri = NetworkUtils.buildMoviePosterUrl(mMovie.getPosterRelativePath());
-            Picasso.with(this).load(posterUri).into(mMoviePoster);
-            mMovieTitle.setText(mMovie.getOriginalTitle());
-            mMoviePlotSynopsis.setText(mMovie.getOverview());
-            mMovieVoteAverage.setText(Double.toString(mMovie.getVoteAverage()));
-            mMovieReleaseDate.setText(mMovie.getReleaseDate());
+            displayMovieInfo();
 
             if (existsInDatabase(mMovie.getId())) {
                 mAddToFavorite.setChecked(CHECKED);
@@ -83,6 +78,19 @@ public class DetailActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void displayMovieInfo() {
+        Uri posterUri = NetworkUtils.buildMoviePosterUrl(mMovie.getPosterRelativePath());
+        Picasso.with(this).load(posterUri).into(mMoviePoster);
+        mMovieTitle.setText(mMovie.getOriginalTitle());
+        mMoviePlotSynopsis.setText(mMovie.getOverview());
+        mMovieVoteAverage.setText(Double.toString(mMovie.getVoteAverage()));
+        mMovieReleaseDate.setText(mMovie.getReleaseDate());
+
+        int movieId = mMovie.getId();
+        // TODO fetech videos and revies from urls built with movieId
+
     }
 
     private boolean existsInDatabase(int id) {
@@ -131,5 +139,8 @@ public class DetailActivity extends AppCompatActivity {
         getContentResolver().delete(uri, null, null);
         Toast.makeText(this, "Movie deleted from favorites", Toast.LENGTH_SHORT).show();
     }
+
+    // TODO set up AsyncTaskLoaders for loading videos and reviews
+    // TODO set up RecycleViews and layouts in activity_detail.xml
 
 }
