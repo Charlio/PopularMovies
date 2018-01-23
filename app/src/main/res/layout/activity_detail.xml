@@ -34,13 +34,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <ToggleButton
-            android:id="@+id/favorite_toggle_button"
+        <CheckBox
+            android:id="@+id/favorite_checkbox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="add to favorites"
-            android:textOff="removed"
-            android:textOn="added" />
+            android:text="@string/checkbox_favorite" />
 
         <TextView
             android:id="@+id/trailer_link"
