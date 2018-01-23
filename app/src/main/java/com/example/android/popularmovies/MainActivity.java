@@ -65,6 +65,13 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
+    @Override
+    protected void onResume() {
+        // TODO invalidate data and refetch from database if mFetchById == FETCH_BY_DATABASE
+        // in case came back from DetailActivity in which the movie in database was just deleted
+        super.onResume();
+    }
+
     private int getNumberOfColumns() {
         DisplayMetrics displayMetrics = this.getResources().getDisplayMetrics();
         float dpWidth = displayMetrics.widthPixels / displayMetrics.density;

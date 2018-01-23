@@ -35,10 +35,24 @@
             android:layout_height="wrap_content" />
 
         <ToggleButton
-            android:id="@+id/favoriteToggleButton"
+            android:id="@+id/favorite_toggle_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="ToggleButton" />
+            android:text="add to favorites"
+            android:textOff="removed"
+            android:textOn="added" />
+
+        <TextView
+            android:id="@+id/trailer_link"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="link to trailer on youtube" />
+
+        <TextView
+            android:id="@+id/reviews"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="reviews" />
 
     </LinearLayout>
 
