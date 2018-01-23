@@ -24,6 +24,8 @@ public final class OpenMovieJsonUtils {
         final String VOTE_AVERAGE = "vote_average";
         final String RELEASE_DATE = "release_date";
 
+        final int INVALID_ID = -1;
+
         ArrayList<Movie> parsedMovieData;
 
         JSONObject movieJson = new JSONObject(movieJsonString);
@@ -39,7 +41,7 @@ public final class OpenMovieJsonUtils {
             double voteAverage = movieObject.getDouble(VOTE_AVERAGE);
             String releaseDate = movieObject.getString(RELEASE_DATE);
 
-            Movie movie = new Movie(posterPath, originalTitle, overview, voteAverage, releaseDate);
+            Movie movie = new Movie(INVALID_ID, posterPath, originalTitle, overview, voteAverage, releaseDate);
 
             parsedMovieData.add(movie);
         }

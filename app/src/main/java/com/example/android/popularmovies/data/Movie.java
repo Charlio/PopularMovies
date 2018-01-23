@@ -20,17 +20,21 @@ public class Movie implements Parcelable {
             return new Movie[size];
         }
     };
+
+    private int _id;
     private String mPosterRelativePath;
     private String mOriginalTitle;
     private String mOverview;
     private double mVoteAverage;
     private String mReleaseDate;
 
-    public Movie(String posterRelativePath,
+    public Movie(int id,
+                 String posterRelativePath,
                  String originalTitle,
                  String overview,
                  double voteAverage,
                  String releaseDate) {
+        _id = id;
         mPosterRelativePath = posterRelativePath;
         mOriginalTitle = originalTitle;
         mOverview = overview;
@@ -39,6 +43,7 @@ public class Movie implements Parcelable {
     }
 
     private Movie(Parcel in) {
+        this._id = in.readInt();
         this.mPosterRelativePath = in.readString();
         this.mOriginalTitle = in.readString();
         this.mOverview = in.readString();
@@ -53,11 +58,16 @@ public class Movie implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeInt(_id);
         parcel.writeString(mPosterRelativePath);
         parcel.writeString(mOriginalTitle);
         parcel.writeString(mOverview);
         parcel.writeDouble(mVoteAverage);
         parcel.writeString(mReleaseDate);
+    }
+
+    public int getId() {
+        return _id;
     }
 
     public String getPosterRelativePath() {

@@ -148,6 +148,7 @@ public class MainActivity extends AppCompatActivity implements
 
         ArrayList<Movie> movies = new ArrayList<>();
 
+        int idIndex = cursor.getColumnIndex(MovieEntry._ID);
         int posterRelativePathId = cursor.getColumnIndex(MovieEntry.COLUMN_POSTER_RELATIVE_PATH);
         int originalTitleId = cursor.getColumnIndex(MovieEntry.COLUMN_ORIGINAL_TITLE);
         int overviewId = cursor.getColumnIndex(MovieEntry.COLUMN_OVERVIEW);
@@ -156,12 +157,14 @@ public class MainActivity extends AppCompatActivity implements
 
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
+            int id = cursor.getInt(idIndex);
             String posterRelativePath = cursor.getString(posterRelativePathId);
             String originalTitle = cursor.getString(originalTitleId);
             String overview = cursor.getString(overviewId);
             double voteAverage = cursor.getDouble(voteAverageId);
             String releaseDate = cursor.getString(releaseDateId);
-            Movie movie = new Movie(posterRelativePath,
+            Movie movie = new Movie(id,
+                    posterRelativePath,
                     originalTitle,
                     overview,
                     voteAverage,
