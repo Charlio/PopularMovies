@@ -2,6 +2,7 @@ package com.example.android.popularmovies;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
@@ -18,6 +19,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.android.popularmovies.data.Movie;
+import com.example.android.popularmovies.data.MovieContract.MovieEntry;
 import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.example.android.popularmovies.utilities.OpenMovieJsonUtils;
 
@@ -32,14 +34,14 @@ public class MainActivity extends AppCompatActivity implements
     private static final int MOVIE_LOADER_ID = 0;
     private static final int SORT_BY_POPULARITY = 0;
     private static final int SORT_BY_RATING = 1;
-    private static final String SEARCH_QUERY_SORT_METHOD_EXTRA = "sort";
+    private static final int FETCH_BY_DATABASE = 2;
+    private static final String SEARCH_QUERY_FETCH_METHOD_EXTRA = "fetch";
     private RecyclerView mRecyclerView;
     private MovieAdapter mMovieAdapter;
     private TextView mErrorMessageDisplay;
     private ProgressBar mLoadingIndicator;
-    private int mSortById;
+    private int mFetchById;
 
-    // TODO create a variable to indicate whether to fetch data from api or database: mFetchFromAPI
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements
 
         mErrorMessageDisplay = findViewById(R.id.tv_error_message_display);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
-        mSortById = SORT_BY_POPULARITY;
+        mFetchById = SORT_BY_POPULARITY;
 
         mRecyclerView = findViewById(R.id.recyclerview_movie);
         int numberOfColumns = getNumberOfColumns();
@@ -89,24 +91,38 @@ public class MainActivity extends AppCompatActivity implements
 
             @Override
             public ArrayList<Movie> loadInBackground() {
-                int sortById;
-
-                // TODO check mFetchFromAPI, add code for qeury favoriate list from database
+                int fetchById;
 
                 if (queryBundle == null) {
-                    sortById = SORT_BY_POPULARITY;
+                    fetchById = SORT_BY_POPULARITY;
                 } else {
-                    sortById = queryBundle.getInt(SEARCH_QUERY_SORT_METHOD_EXTRA);
+                    fetchById = queryBundle.getInt(SEARCH_QUERY_FETCH_METHOD_EXTRA);
                 }
-                URL searchQueryUrl = NetworkUtils.buildMovieDataUrl(sortById);
-                try {
-                    String movieResultJson = NetworkUtils.getResponseFromHttpUrl(searchQueryUrl);
-                    ArrayList<Movie> parsedMovieResults
-                            = OpenMovieJsonUtils.getSimpleMovieStringsFromJson(movieResultJson);
-                    return parsedMovieResults;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return null;
+
+                if (fetchById == FETCH_BY_DATABASE) {
+                    Cursor cursor;
+                    try {
+                        cursor = getContentResolver().query(MovieEntry.CONTENT_URI,
+                                null,
+                                null,
+                                null,
+                                null);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                    return fetchAllMoviesFromDatabase(cursor);
+                } else {
+                    URL searchQueryUrl = NetworkUtils.buildMovieDataUrl(fetchById);
+                    try {
+                        String movieResultJson = NetworkUtils.getResponseFromHttpUrl(searchQueryUrl);
+                        ArrayList<Movie> parsedMovieResults
+                                = OpenMovieJsonUtils.getSimpleMovieStringsFromJson(movieResultJson);
+                        return parsedMovieResults;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return null;
+                    }
                 }
             }
 
@@ -116,6 +132,40 @@ public class MainActivity extends AppCompatActivity implements
                 super.deliverResult(parsedMovieResuls);
             }
         };
+    }
+
+    private ArrayList<Movie> fetchAllMoviesFromDatabase(Cursor cursor) {
+        if (cursor == null || cursor.getCount() == 0) {
+            return null;
+        }
+
+        ArrayList<Movie> movies = new ArrayList<>();
+
+        int posterRelativePathId = cursor.getColumnIndex(MovieEntry.COLUMN_POSTER_RELATIVE_PATH);
+        int originalTitleId = cursor.getColumnIndex(MovieEntry.COLUMN_ORIGINAL_TITLE);
+        int overviewId = cursor.getColumnIndex(MovieEntry.COLUMN_OVERVIEW);
+        int voteAverageId = cursor.getColumnIndex(MovieEntry.COLUMN_VOTE_AVERAGE);
+        int releaseDateId = cursor.getColumnIndex(MovieEntry.COLUMN_RELEASE_DATE);
+
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            String posterRelativePath = cursor.getString(posterRelativePathId);
+            String originalTitle = cursor.getString(originalTitleId);
+            String overview = cursor.getString(overviewId);
+            double voteAverage = cursor.getDouble(voteAverageId);
+            String releaseDate = cursor.getString(releaseDateId);
+            Movie movie = new Movie(posterRelativePath,
+                    originalTitle,
+                    overview,
+                    voteAverage,
+                    releaseDate);
+            movies.add(movie);
+
+            cursor.moveToNext();
+        }
+        cursor.close();
+
+        return movies;
     }
 
     @Override
@@ -145,15 +195,13 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    // TODO add a method to create ArrayList<Movie> from Cursor, used in loadInBackground in onCreateLoader
-
     private void invalidateData() {
         mMovieAdapter.setMovieData(null);
     }
 
     private void fetchMovieData() {
         Bundle queryBundle = new Bundle();
-        queryBundle.putInt(SEARCH_QUERY_SORT_METHOD_EXTRA, mSortById);
+        queryBundle.putInt(SEARCH_QUERY_FETCH_METHOD_EXTRA, mFetchById);
 
         LoaderManager loaderManager = getSupportLoaderManager();
         Loader<String> movieSearchLoader = loaderManager.getLoader(MOVIE_LOADER_ID);
@@ -186,23 +234,25 @@ public class MainActivity extends AppCompatActivity implements
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_sort_popular) {
-            invalidateData();
-            mSortById = SORT_BY_POPULARITY;
-            fetchMovieData();
-            return true;
+        switch (id) {
+            case R.id.action_sort_popular:
+                invalidateData();
+                mFetchById = SORT_BY_POPULARITY;
+                fetchMovieData();
+                return true;
+            case R.id.action_sort_rating:
+                invalidateData();
+                mFetchById = SORT_BY_RATING;
+                fetchMovieData();
+                return true;
+            case R.id.action_favorite_list:
+                invalidateData();
+                mFetchById = FETCH_BY_DATABASE;
+                fetchMovieData();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-
-        if (id == R.id.action_sort_rating) {
-            invalidateData();
-            mSortById = SORT_BY_RATING;
-            fetchMovieData();
-            return true;
-        }
-
-        // TODO change to switch, add option on displaying favorite list
-
-        return super.onOptionsItemSelected(item);
     }
 
 }

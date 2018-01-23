@@ -8,4 +8,6 @@
     <string name="action_sort_popular">Sort by Popularity</string>
 
     <string name="action_sort_rating">Sort by Rating</string>
+
+    <string name="action_favorite_list">Show Favorites</string>
 </resources>

@@ -42,6 +42,9 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
 
     @Override
     public void onBindViewHolder(MovieAdapterViewHolder holder, int position) {
+        if (mMovieData == null || mMovieData.size() == 0) {
+            return;
+        }
         Movie singleMovieData = mMovieData.get(position);
         String posterRelativePath = singleMovieData.getPosterRelativePath();
         Uri posterUri = NetworkUtils.buildMoviePosterUrl(posterRelativePath);
