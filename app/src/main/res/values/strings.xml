@@ -2,7 +2,7 @@
     <string name="app_name">PopularMovies</string>
 
     <string name="error_message">
-        An error has occurred. Please try again.
+        No movies available.
     </string>
 
     <string name="action_sort_popular">Sort by Popularity</string>

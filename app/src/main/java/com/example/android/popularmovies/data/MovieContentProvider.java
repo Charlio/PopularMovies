@@ -45,7 +45,7 @@ public class MovieContentProvider extends ContentProvider {
         final SQLiteDatabase db = mMovieDbHelper.getWritableDatabase();
         int match = sUriMatcher.match(uri);
         Uri returnUri;
-
+        // TODO check column_id conflict
         switch (match) {
             case MOVIES:
                 long id = db.insert(TABLE_NAME, null, contentValues);
@@ -92,7 +92,7 @@ public class MovieContentProvider extends ContentProvider {
         final SQLiteDatabase db = mMovieDbHelper.getWritableDatabase();
         int match = sUriMatcher.match(uri);
         int moviesDeleted;
-
+        // TODO check column_id ?
         switch (match) {
             case MOVIES_WITH_ID:
                 String id = uri.getPathSegments().get(1);
@@ -114,6 +114,7 @@ public class MovieContentProvider extends ContentProvider {
         int match = sUriMatcher.match(uri);
         switch (match) {
             case MOVIES_WITH_ID:
+                // TODO use column_id ?
                 String id = uri.getPathSegments().get(1);
                 moviesUpdated = mMovieDbHelper.getWritableDatabase()
                         .update(TABLE_NAME,

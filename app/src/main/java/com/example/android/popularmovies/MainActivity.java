@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements
 
         ArrayList<Movie> movies = new ArrayList<>();
 
-        int idIndex = cursor.getColumnIndex(MovieEntry._ID);
+        int idIndex = cursor.getColumnIndex(MovieEntry.COLUMN_ID);
         int posterRelativePathId = cursor.getColumnIndex(MovieEntry.COLUMN_POSTER_RELATIVE_PATH);
         int originalTitleId = cursor.getColumnIndex(MovieEntry.COLUMN_ORIGINAL_TITLE);
         int overviewId = cursor.getColumnIndex(MovieEntry.COLUMN_OVERVIEW);
