@@ -6,12 +6,16 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,6 +31,7 @@ import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 
+import java.net.URL;
 import java.util.ArrayList;
 
 /**
@@ -34,15 +39,20 @@ import java.util.ArrayList;
  */
 
 public class DetailActivity extends AppCompatActivity implements
-        VideoAdapter.VideoAdapterOnClickHandler {
+        VideoAdapter.VideoAdapterOnClickHandler,
+        LoaderManager.LoaderCallbacks<String[]> {
 
     private static final String TAG = DetailActivity.class.getSimpleName();
 
-    private static final boolean CHECKED = true;
+    private static final int VIDEO_AND_REVIEW_LOADER_ID = 1;
 
+    private static final boolean CHECKED = true;
+    private static final int FETCH_BY_DATABASE = 2;
+    private static final String FETCH_METHOD = "fetch";
+    private static final int API = 0;
+    private static final int DATABASE = 1;
     private Movie mMovie;
     private int mMovieId;
-
     private TextView mMovieTitle;
     private TextView mMovieReleaseDate;
     private ImageView mMoviePoster;
@@ -51,10 +61,13 @@ public class DetailActivity extends AppCompatActivity implements
     private CheckBox mAddToFavorite;
     private RecyclerView mRecyclerviewVideos;
     private RecyclerView mREcyclerviewReviews;
-
+    private String mVideoJsonString = "";
+    private String mReviewJsonString = "";
     private VideoAdapter mVideoAdapter;
     private ReviewAdapter mReviewAdapter;
-
+    private int fetchFrom;
+    private TextView mErrorMessageDisplay;
+    private ProgressBar mLoadingIndicator;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -74,6 +87,12 @@ public class DetailActivity extends AppCompatActivity implements
 
         if (intentStartedActivity.hasExtra("parcel_data")) {
             mMovie = intentStartedActivity.getParcelableExtra("parcel_data");
+            int fetchMethod = intentStartedActivity.getIntExtra("fetch_method", -1);
+            if (fetchMethod == FETCH_BY_DATABASE) {
+                fetchFrom = DATABASE;
+            } else {
+                fetchFrom = API;
+            }
             mMovieId = mMovie.getId();
 
             displayMovieInfo();
@@ -98,6 +117,117 @@ public class DetailActivity extends AppCompatActivity implements
         });
     }
 
+    @Override
+    public Loader<String[]> onCreateLoader(int id, final Bundle queryBundle) {
+        return new AsyncTaskLoader<String[]>(this) {
+
+            String[] mParsedResults = new String[2];
+
+            @Override
+            protected void onStartLoading() {
+                mLoadingIndicator.setVisibility(View.VISIBLE);
+                if (mParsedResults != null) {
+                    deliverResult(mParsedResults);
+                } else {
+                    forceLoad();
+                }
+            }
+
+            @Override
+            public String[] loadInBackground() {
+                int fetchMethod;
+                if (queryBundle == null) {
+                    fetchMethod = API;
+                } else {
+                    fetchMethod = queryBundle.getInt(FETCH_METHOD);
+                }
+
+                if (fetchMethod == DATABASE) {
+                    Cursor cursor;
+                    try {
+                        String[] projection =
+                                {MovieEntry.COLUMN_VIDEO_JSON_STRING, MovieEntry.COLUMN_REVIEW_JSON_STRING};
+                        String selection = MovieEntry.COLUMN_ID + "=?";
+                        String[] selectionArgs = {Integer.toString(mMovieId)};
+                        cursor = getContentResolver().query(MovieEntry.CONTENT_URI,
+                                projection,
+                                selection,
+                                selectionArgs,
+                                null);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                    return fetchVideosAndReviewsFromDatabase(cursor);
+                } else {
+                    URL videosQueryUrl = NetworkUtils.buildMovieVideosUrl(mMovieId);
+                    URL reviewsQueryUrl = NetworkUtils.buildMovieReviewsUrl(mMovieId);
+                    try {
+                        String videoJsonString = NetworkUtils.getResponseFromHttpUrl(videosQueryUrl);
+                        String reviewJsonString = NetworkUtils.getResponseFromHttpUrl(reviewsQueryUrl);
+                        String[] combinedJsonStrings = {videoJsonString, reviewJsonString};
+                        return combinedJsonStrings;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                }
+            }
+
+            @Override
+            public void deliverResult(String[] parsedResuls) {
+                mParsedResults = parsedResuls;
+                super.deliverResult(parsedResuls);
+            }
+        };
+    }
+
+    private String[] fetchVideosAndReviewsFromDatabase(Cursor cursor) {
+        if (cursor == null || cursor.getCount() == 0) {
+            return null;
+        }
+
+        int videoJsonStringId = cursor.getColumnIndex(MovieEntry.COLUMN_VIDEO_JSON_STRING);
+        int reviewJsonStringId = cursor.getColumnIndex(MovieEntry.COLUMN_REVIEW_JSON_STRING);
+
+        cursor.moveToFirst();
+        String videoJsonString = cursor.getString(videoJsonStringId);
+        String reviewJsonString = cursor.getString(reviewJsonStringId);
+        cursor.close();
+
+        String[] videosAndReviews = {videoJsonString, reviewJsonString};
+
+        return videosAndReviews;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<String[]> loader, String[] data) {
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
+        if (data == null) {
+            showErrorMessage();
+        } else {
+            showMovieDataView();
+            mVideoJsonString = data[0];
+            mReviewJsonString = data[1];
+            ArrayList<Video> videos = new ArrayList<>();
+            ArrayList<Review> reviews = new ArrayList<>();
+            try {
+                videos = OpenJsonUtils.getSingleMovieVideosFromJsonString(mVideoJsonString);
+                reviews = OpenJsonUtils.getSingleMovieReviewsFromJsonString(mReviewJsonString);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            mVideoAdapter.setVideoData(videos);
+            mReviewAdapter.setReviewData(reviews);
+        }
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<String[]> loader) {
+
+    }
+
     private void displayMovieInfo() {
         Uri posterUri = NetworkUtils.buildMoviePosterUrl(mMovie.getPosterRelativePath());
         Picasso.with(this).load(posterUri).into(mMoviePoster);
@@ -113,8 +243,6 @@ public class DetailActivity extends AppCompatActivity implements
         mVideoAdapter = new VideoAdapter(this, this);
         mRecyclerviewVideos.setAdapter(mVideoAdapter);
 
-        fetchVideoData();
-
         LinearLayoutManager reviewLayoutManager
                 = new LinearLayoutManager(this);
         mREcyclerviewReviews.setLayoutManager(reviewLayoutManager);
@@ -122,7 +250,7 @@ public class DetailActivity extends AppCompatActivity implements
         mReviewAdapter = new ReviewAdapter(this);
         mREcyclerviewReviews.setAdapter(mReviewAdapter);
 
-        fetchReviewData();
+        fetchVideoAndReviewData();
 
     }
 
@@ -151,8 +279,8 @@ public class DetailActivity extends AppCompatActivity implements
         String overview = mMovie.getOverview();
         double voteAverage = mMovie.getVoteAverage();
         String releaseDate = mMovie.getReleaseDate();
-        String videoJsonString = mMovie.getVideoJsonString();
-        String reviewJsonString = mMovie.getReviewJsonString();
+        String videoJsonString = mVideoJsonString;
+        String reviewJsonString = mReviewJsonString;
 
         ContentValues values = new ContentValues();
         values.put(MovieEntry.COLUMN_ID, id);
@@ -177,34 +305,34 @@ public class DetailActivity extends AppCompatActivity implements
         Toast.makeText(this, "Movie deleted from favorites", Toast.LENGTH_SHORT).show();
     }
 
+    private void fetchVideoAndReviewData() {
+        Bundle queryBundle = new Bundle();
+        queryBundle.putInt(FETCH_METHOD, fetchFrom);
 
-    private void fetchVideoData() {
-        String videoJsonString = mMovie.getVideoJsonString();
-        ArrayList<Video> videos = new ArrayList<>();
-        try {
-            videos =
-                    OpenJsonUtils.getSingleMovieVideosFromJsonString(videoJsonString);
-        } catch (JSONException e) {
-            e.printStackTrace();
+        LoaderManager loaderManager = getSupportLoaderManager();
+        Loader<String> videosAndReviewsLoader = loaderManager.getLoader(VIDEO_AND_REVIEW_LOADER_ID);
+        if (videosAndReviewsLoader == null) {
+            loaderManager.initLoader(VIDEO_AND_REVIEW_LOADER_ID, queryBundle, this);
+        } else {
+            loaderManager.restartLoader(VIDEO_AND_REVIEW_LOADER_ID, queryBundle, this);
         }
-        mVideoAdapter.setVideoData(videos);
-    }
-
-    private void fetchReviewData() {
-        String reviewJsonString = mMovie.getReviewJsonString();
-        ArrayList<Review> reviews = new ArrayList<>();
-        try {
-            reviews =
-                    OpenJsonUtils.getSingleMovieReviewsFromJsonString(reviewJsonString);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        mReviewAdapter.setReviewData(reviews);
     }
 
     @Override
     public void onClick(Video singleVideo) {
         // TODO open intent to start trailers on youtube
+    }
+
+    private void showMovieDataView() {
+        mErrorMessageDisplay.setVisibility(View.INVISIBLE);
+        mRecyclerviewVideos.setVisibility(View.VISIBLE);
+        mREcyclerviewReviews.setVisibility(View.VISIBLE);
+    }
+
+    private void showErrorMessage() {
+        mRecyclerviewVideos.setVisibility(View.INVISIBLE);
+        mREcyclerviewReviews.setVisibility(View.INVISIBLE);
+        mErrorMessageDisplay.setVisibility(View.VISIBLE);
     }
 
 }

@@ -87,7 +87,7 @@ public final class NetworkUtils {
      */
     @Nullable
     public static URL buildMovieVideosUrl(int movieId) {
-        Uri builtUri = Uri.parse(BASE_MOVIE_DATA_URL + VIDEOS).buildUpon()
+        Uri builtUri = Uri.parse(BASE_MOVIE_DATA_URL + movieId + "/" + VIDEOS).buildUpon()
                 .appendQueryParameter(API_KEY_QUERY, API_KEY)
                 .build();
 
@@ -108,7 +108,7 @@ public final class NetworkUtils {
      */
     @Nullable
     public static URL buildMovieReviewsUrl(int movieId) {
-        Uri builtUri = Uri.parse(BASE_MOVIE_DATA_URL + REVIEWS).buildUpon()
+        Uri builtUri = Uri.parse(BASE_MOVIE_DATA_URL + movieId + "/" + REVIEWS).buildUpon()
                 .appendQueryParameter(API_KEY_QUERY, API_KEY)
                 .build();
 

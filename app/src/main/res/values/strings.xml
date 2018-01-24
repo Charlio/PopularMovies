@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">PopularMovies</string>
 
-    <string name="error_message">No movies available</string>
+    <string name="error_message">No data available</string>
 
     <string name="action_sort_popular">Sort by Popularity</string>
 
