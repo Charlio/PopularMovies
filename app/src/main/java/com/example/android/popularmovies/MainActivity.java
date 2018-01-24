@@ -124,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements
                     URL searchQueryUrl = NetworkUtils.buildMovieDataUrl(fetchById);
                     try {
                         String movieResultJson = NetworkUtils.getResponseFromHttpUrl(searchQueryUrl);
+                        // TODO also fetch videos and reviews json and combine to create ArrayList<Movie>
                         ArrayList<Movie> parsedMovieResults
                                 = OpenMovieJsonUtils.getMoviesArrayListFromJsonString(movieResultJson);
                         return parsedMovieResults;

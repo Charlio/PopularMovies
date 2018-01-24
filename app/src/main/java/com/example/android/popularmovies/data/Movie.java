@@ -27,6 +27,7 @@ public class Movie implements Parcelable {
     private String mOverview;
     private double mVoteAverage;
     private String mReleaseDate;
+    // TODO add ArrayList<Video>, ArrayList<Review>
 
     public Movie(int id,
                  String posterRelativePath,

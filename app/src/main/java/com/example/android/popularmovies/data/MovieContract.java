@@ -19,6 +19,8 @@ public class MovieContract {
 
         public static final String TABLE_NAME = "movies";
 
+        // TODO add videos_json and reviews_json columns
+
         public static final String COLUMN_ID = "id";
         public static final String COLUMN_POSTER_RELATIVE_PATH = "poster_relative_path";
         public static final String COLUMN_ORIGINAL_TITLE = "original_title";

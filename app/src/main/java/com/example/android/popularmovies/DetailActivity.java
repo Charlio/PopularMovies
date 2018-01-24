@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.LoaderManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -24,15 +23,13 @@ import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.squareup.picasso.Picasso;
 
 import java.net.URL;
-import java.util.ArrayList;
 
 /**
  * Created by chali on 1/14/2018.
  */
 
 public class DetailActivity extends AppCompatActivity implements
-        VideoAdapter.VideoAdapterOnClickHandler,
-        LoaderManager.LoaderCallbacks<ArrayList<URL>> {
+        VideoAdapter.VideoAdapterOnClickHandler {
 
     private static final String TAG = DetailActivity.class.getSimpleName();
 
@@ -120,7 +117,7 @@ public class DetailActivity extends AppCompatActivity implements
         mReviewAdapter = new ReviewAdapter(this);
         mREcyclerviewReviews.setAdapter(mReviewAdapter);
 
-        fetchMovieData();
+        fetchReviewData();
 
     }
 
@@ -171,14 +168,18 @@ public class DetailActivity extends AppCompatActivity implements
         Toast.makeText(this, "Movie deleted from favorites", Toast.LENGTH_SHORT).show();
     }
 
-    // TODO set up AsyncTaskLoaders for loading videos and reviews
 
     private void fetchVideoData() {
-
+        // TODO fetch video links ArrayList<URL> from mMovie and call mVideoAdapter.setVideoData
     }
 
-    private void fetchMovieData() {
+    private void fetchReviewData() {
+        // TODO fetch reviews ArrayList<String> from mMovie and call mReviewAdapter.setReviewData
+    }
 
+    @Override
+    public void onClick(URL singleVideoLink) {
+        // TODO open intent to start trailers on youtube
     }
 
 }
