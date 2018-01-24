@@ -18,8 +18,11 @@ import java.util.ArrayList;
  * Created by chali on 1/14/2018.
  */
 
-public final class OpenMovieJsonUtils {
-    public static ArrayList<Movie> getMoviesArrayListFromJsonString(String movieJsonString)
+public final class OpenJsonUtils {
+    public static ArrayList<Movie> getMovieArrayListFromJsonString(
+            String movieJsonString,
+            ArrayList<String> videoJsonStrings,
+            ArrayList<String> reviewJsonStrings)
             throws JSONException {
         final String MOVIE_LIST = "results";
 
@@ -47,12 +50,37 @@ public final class OpenMovieJsonUtils {
             double voteAverage = movieObject.getDouble(VOTE_AVERAGE);
             String releaseDate = movieObject.getString(RELEASE_DATE);
 
-            Movie movie = new Movie(id, posterPath, originalTitle, overview, voteAverage, releaseDate);
+            String videoJsonString = videoJsonStrings.get(i);
+            String reviewJsonString = reviewJsonStrings.get(i);
+
+            Movie movie = new Movie(id, posterPath,
+                    originalTitle, overview,
+                    voteAverage, releaseDate,
+                    videoJsonString, reviewJsonString);
 
             parsedMovieData.add(movie);
         }
 
         return parsedMovieData;
+    }
+
+    public static ArrayList<Integer> getMovieIdArrayListFromJsonString(String movieJsonString)
+            throws JSONException {
+        final String MOVIE_LIST = "results";
+        final String ID = "id";
+        ArrayList<Integer> parsedMovieIds;
+
+        JSONObject movieJson = new JSONObject(movieJsonString);
+        JSONArray movieArray = movieJson.getJSONArray(MOVIE_LIST);
+        parsedMovieIds = new ArrayList<>();
+
+        for (int i = 0; i < movieArray.length(); i++) {
+            JSONObject movieObject = movieArray.getJSONObject(i);
+            int id = movieObject.getInt(ID);
+            parsedMovieIds.add(id);
+        }
+
+        return parsedMovieIds;
     }
 
     public static ArrayList<Video> getSingleMovieVideosFromJsonString(String videosJsonString)

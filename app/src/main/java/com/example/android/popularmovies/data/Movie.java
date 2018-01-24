@@ -27,20 +27,25 @@ public class Movie implements Parcelable {
     private String mOverview;
     private double mVoteAverage;
     private String mReleaseDate;
-    // TODO add ArrayList<Video>, ArrayList<Review>
+    private String mVideoJsonString;
+    private String mReviewJsonSting;
 
     public Movie(int id,
                  String posterRelativePath,
                  String originalTitle,
                  String overview,
                  double voteAverage,
-                 String releaseDate) {
+                 String releaseDate,
+                 String videoJsonString,
+                 String reviewJsonString) {
         this.id = id;
         mPosterRelativePath = posterRelativePath;
         mOriginalTitle = originalTitle;
         mOverview = overview;
         mVoteAverage = voteAverage;
         mReleaseDate = releaseDate;
+        mVideoJsonString = videoJsonString;
+        mReviewJsonSting = reviewJsonString;
     }
 
     private Movie(Parcel in) {
@@ -50,6 +55,8 @@ public class Movie implements Parcelable {
         this.mOverview = in.readString();
         this.mVoteAverage = in.readDouble();
         this.mReleaseDate = in.readString();
+        this.mVideoJsonString = in.readString();
+        this.mReviewJsonSting = in.readString();
     }
 
     @Override
@@ -65,6 +72,8 @@ public class Movie implements Parcelable {
         parcel.writeString(mOverview);
         parcel.writeDouble(mVoteAverage);
         parcel.writeString(mReleaseDate);
+        parcel.writeString(mVideoJsonString);
+        parcel.writeString(mReviewJsonSting);
     }
 
     public int getId() {
@@ -89,5 +98,13 @@ public class Movie implements Parcelable {
 
     public String getReleaseDate() {
         return mReleaseDate;
+    }
+
+    public String getVideoJsonString() {
+        return mVideoJsonString;
+    }
+
+    public String getReviewJsonString() {
+        return mReviewJsonSting;
     }
 }

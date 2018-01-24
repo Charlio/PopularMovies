@@ -22,7 +22,7 @@ import com.example.android.popularmovies.adapters.MovieAdapter;
 import com.example.android.popularmovies.data.Movie;
 import com.example.android.popularmovies.data.MovieContract.MovieEntry;
 import com.example.android.popularmovies.utilities.NetworkUtils;
-import com.example.android.popularmovies.utilities.OpenMovieJsonUtils;
+import com.example.android.popularmovies.utilities.OpenJsonUtils;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -124,9 +124,14 @@ public class MainActivity extends AppCompatActivity implements
                     URL searchQueryUrl = NetworkUtils.buildMovieDataUrl(fetchById);
                     try {
                         String movieResultJson = NetworkUtils.getResponseFromHttpUrl(searchQueryUrl);
-                        // TODO also fetch videos and reviews json and combine to create ArrayList<Movie>
+                        ArrayList<String> videoJsonStrings = fetchVideoJsonStrings(movieResultJson);
+                        ArrayList<String> reviewJsonStrings = fetchReviewJsonStrings(movieResultJson);
+
                         ArrayList<Movie> parsedMovieResults
-                                = OpenMovieJsonUtils.getMoviesArrayListFromJsonString(movieResultJson);
+                                = OpenJsonUtils.getMovieArrayListFromJsonString(
+                                movieResultJson,
+                                videoJsonStrings,
+                                reviewJsonStrings);
                         return parsedMovieResults;
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -143,6 +148,34 @@ public class MainActivity extends AppCompatActivity implements
         };
     }
 
+    private ArrayList<String> fetchVideoJsonStrings(String movieResultJson)
+            throws Exception {
+        ArrayList<Integer> movieIds =
+                OpenJsonUtils.getMovieIdArrayListFromJsonString(movieResultJson);
+        ArrayList<String> videoJsonStrings = new ArrayList<>();
+        for (int i = 0; i < movieIds.size(); i++) {
+            int movieId = movieIds.get(i);
+            URL videoUrl = NetworkUtils.buildMovieVideosUrl(movieId);
+            String videoJsonString = NetworkUtils.getResponseFromHttpUrl(videoUrl);
+            videoJsonStrings.add(videoJsonString);
+        }
+        return videoJsonStrings;
+    }
+
+    private ArrayList<String> fetchReviewJsonStrings(String movieResultJson)
+            throws Exception {
+        ArrayList<Integer> movieIds =
+                OpenJsonUtils.getMovieIdArrayListFromJsonString(movieResultJson);
+        ArrayList<String> reviewJsonStrings = new ArrayList<>();
+        for (int i = 0; i < movieIds.size(); i++) {
+            int movieId = movieIds.get(i);
+            URL reviewUrl = NetworkUtils.buildMovieReviewsUrl(movieId);
+            String reviewJsonString = NetworkUtils.getResponseFromHttpUrl(reviewUrl);
+            reviewJsonStrings.add(reviewJsonString);
+        }
+        return reviewJsonStrings;
+    }
+
     private ArrayList<Movie> fetchAllMoviesFromDatabase(Cursor cursor) {
         if (cursor == null || cursor.getCount() == 0) {
             return null;
@@ -156,6 +189,8 @@ public class MainActivity extends AppCompatActivity implements
         int overviewId = cursor.getColumnIndex(MovieEntry.COLUMN_OVERVIEW);
         int voteAverageId = cursor.getColumnIndex(MovieEntry.COLUMN_VOTE_AVERAGE);
         int releaseDateId = cursor.getColumnIndex(MovieEntry.COLUMN_RELEASE_DATE);
+        int videoJsonStringId = cursor.getColumnIndex(MovieEntry.COLUMN_VIDEO_JSON_STRING);
+        int reviewJsonStringId = cursor.getColumnIndex(MovieEntry.COLUMN_REVIEW_JSON_STRING);
 
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
@@ -165,12 +200,16 @@ public class MainActivity extends AppCompatActivity implements
             String overview = cursor.getString(overviewId);
             double voteAverage = cursor.getDouble(voteAverageId);
             String releaseDate = cursor.getString(releaseDateId);
+            String videoJsonString = cursor.getString(videoJsonStringId);
+            String reviewJsonString = cursor.getString(reviewJsonStringId);
             Movie movie = new Movie(id,
                     posterRelativePath,
                     originalTitle,
                     overview,
                     voteAverage,
-                    releaseDate);
+                    releaseDate,
+                    videoJsonString,
+                    reviewJsonString);
             movies.add(movie);
 
             cursor.moveToNext();

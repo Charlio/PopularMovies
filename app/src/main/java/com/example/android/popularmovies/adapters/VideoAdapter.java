@@ -8,8 +8,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.android.popularmovies.R;
+import com.example.android.popularmovies.data.Video;
 
-import java.net.URL;
 import java.util.ArrayList;
 
 /**
@@ -20,7 +20,7 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoAdapter
 
     private final Context context;
     private final VideoAdapterOnClickHandler mClickHandler;
-    private ArrayList<URL> mVideoData;
+    private ArrayList<Video> mVideoData;
 
     public VideoAdapter(Context context, VideoAdapterOnClickHandler clickHandler) {
         this.context = context;
@@ -43,8 +43,8 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoAdapter
         if (mVideoData == null || mVideoData.size() == 0) {
             return;
         }
-        URL singleVideoLink = mVideoData.get(position);
-        holder.mURLTextView.setText(singleVideoLink.toString());
+        Video video = mVideoData.get(position);
+        holder.mURLTextView.setText(video.getUrl().toString());
     }
 
     @Override
@@ -56,13 +56,13 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoAdapter
         }
     }
 
-    public void setVideoData(ArrayList<URL> videoData) {
+    public void setVideoData(ArrayList<Video> videoData) {
         mVideoData = videoData;
         notifyDataSetChanged();
     }
 
     public interface VideoAdapterOnClickHandler {
-        void onClick(URL singleVideoLink);
+        void onClick(Video singleVideo);
     }
 
     public class VideoAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -77,8 +77,8 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoAdapter
         @Override
         public void onClick(View view) {
             int adapterPosition = getAdapterPosition();
-            URL singleVideoLink = mVideoData.get(adapterPosition);
-            mClickHandler.onClick(singleVideoLink);
+            Video singleVideo = mVideoData.get(adapterPosition);
+            mClickHandler.onClick(singleVideo);
         }
     }
 }

@@ -19,10 +19,15 @@ import com.example.android.popularmovies.adapters.ReviewAdapter;
 import com.example.android.popularmovies.adapters.VideoAdapter;
 import com.example.android.popularmovies.data.Movie;
 import com.example.android.popularmovies.data.MovieContract.MovieEntry;
+import com.example.android.popularmovies.data.Review;
+import com.example.android.popularmovies.data.Video;
 import com.example.android.popularmovies.utilities.NetworkUtils;
+import com.example.android.popularmovies.utilities.OpenJsonUtils;
 import com.squareup.picasso.Picasso;
 
-import java.net.URL;
+import org.json.JSONException;
+
+import java.util.ArrayList;
 
 /**
  * Created by chali on 1/14/2018.
@@ -146,6 +151,8 @@ public class DetailActivity extends AppCompatActivity implements
         String overview = mMovie.getOverview();
         double voteAverage = mMovie.getVoteAverage();
         String releaseDate = mMovie.getReleaseDate();
+        String videoJsonString = mMovie.getVideoJsonString();
+        String reviewJsonString = mMovie.getReviewJsonString();
 
         ContentValues values = new ContentValues();
         values.put(MovieEntry.COLUMN_ID, id);
@@ -154,6 +161,8 @@ public class DetailActivity extends AppCompatActivity implements
         values.put(MovieEntry.COLUMN_OVERVIEW, overview);
         values.put(MovieEntry.COLUMN_VOTE_AVERAGE, voteAverage);
         values.put(MovieEntry.COLUMN_RELEASE_DATE, releaseDate);
+        values.put(MovieEntry.COLUMN_VIDEO_JSON_STRING, videoJsonString);
+        values.put(MovieEntry.COLUMN_REVIEW_JSON_STRING, reviewJsonString);
 
         Uri uri = getContentResolver().insert(MovieEntry.CONTENT_URI, values);
         if (uri != null) {
@@ -170,15 +179,31 @@ public class DetailActivity extends AppCompatActivity implements
 
 
     private void fetchVideoData() {
-        // TODO fetch video links ArrayList<URL> from mMovie and call mVideoAdapter.setVideoData
+        String videoJsonString = mMovie.getVideoJsonString();
+        ArrayList<Video> videos = new ArrayList<>();
+        try {
+            videos =
+                    OpenJsonUtils.getSingleMovieVideosFromJsonString(videoJsonString);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        mVideoAdapter.setVideoData(videos);
     }
 
     private void fetchReviewData() {
-        // TODO fetch reviews ArrayList<String> from mMovie and call mReviewAdapter.setReviewData
+        String reviewJsonString = mMovie.getReviewJsonString();
+        ArrayList<Review> reviews = new ArrayList<>();
+        try {
+            reviews =
+                    OpenJsonUtils.getSingleMovieReviewsFromJsonString(reviewJsonString);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        mReviewAdapter.setReviewData(reviews);
     }
 
     @Override
-    public void onClick(URL singleVideoLink) {
+    public void onClick(Video singleVideo) {
         // TODO open intent to start trailers on youtube
     }
 

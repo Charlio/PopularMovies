@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.android.popularmovies.R;
+import com.example.android.popularmovies.data.Review;
 
 import java.util.ArrayList;
 
@@ -18,7 +19,7 @@ import java.util.ArrayList;
 public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewAdapterViewHolder> {
 
     private final Context context;
-    private ArrayList<String> mReviewData;
+    private ArrayList<Review> mReviewData;
 
     public ReviewAdapter(Context context) {
         this.context = context;
@@ -40,8 +41,8 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewAdap
         if (mReviewData == null || mReviewData.size() == 0) {
             return;
         }
-        String singleReview = mReviewData.get(position);
-        holder.mReviewTextView.setText(singleReview);
+        Review review = mReviewData.get(position);
+        holder.mReviewTextView.setText(review.getAuthor() + ": " + review.getContent());
     }
 
     @Override
@@ -53,7 +54,7 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewAdap
         }
     }
 
-    public void setReviewData(ArrayList<String> reviewData) {
+    public void setReviewData(ArrayList<Review> reviewData) {
         mReviewData = reviewData;
         notifyDataSetChanged();
     }
