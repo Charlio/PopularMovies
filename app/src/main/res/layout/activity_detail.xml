@@ -40,17 +40,15 @@
             android:layout_height="wrap_content"
             android:text="@string/checkbox_favorite" />
 
-        <TextView
-            android:id="@+id/trailer_link"
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerview_videos"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="link to trailer on youtube" />
+            android:layout_height="match_parent" />
 
-        <TextView
-            android:id="@+id/reviews"
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerview_reviews"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="reviews" />
+            android:layout_height="match_parent" />
 
     </LinearLayout>
 

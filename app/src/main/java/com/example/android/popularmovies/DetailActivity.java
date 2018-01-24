@@ -6,38 +6,53 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.LoaderManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.android.popularmovies.adapters.ReviewAdapter;
+import com.example.android.popularmovies.adapters.VideoAdapter;
 import com.example.android.popularmovies.data.Movie;
 import com.example.android.popularmovies.data.MovieContract.MovieEntry;
 import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.squareup.picasso.Picasso;
 
+import java.net.URL;
+import java.util.ArrayList;
+
 /**
  * Created by chali on 1/14/2018.
  */
 
-public class DetailActivity extends AppCompatActivity {
+public class DetailActivity extends AppCompatActivity implements
+        VideoAdapter.VideoAdapterOnClickHandler,
+        LoaderManager.LoaderCallbacks<ArrayList<URL>> {
 
     private static final String TAG = DetailActivity.class.getSimpleName();
 
     private static final boolean CHECKED = true;
 
     private Movie mMovie;
+    private int mMovieId;
+
     private TextView mMovieTitle;
     private TextView mMovieReleaseDate;
     private ImageView mMoviePoster;
     private TextView mMovieVoteAverage;
     private TextView mMoviePlotSynopsis;
     private CheckBox mAddToFavorite;
-    // TODO add trailers and reviews
-    private TextView mTrailerLink;
-    private TextView mReviews;
+    private RecyclerView mRecyclerviewVideos;
+    private RecyclerView mREcyclerviewReviews;
+
+    private VideoAdapter mVideoAdapter;
+    private ReviewAdapter mReviewAdapter;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,17 +65,18 @@ public class DetailActivity extends AppCompatActivity {
         mMovieVoteAverage = findViewById(R.id.movie_vote_average);
         mMoviePlotSynopsis = findViewById(R.id.movie_plot_synopsis);
         mAddToFavorite = findViewById(R.id.favorite_checkbox);
-        mTrailerLink = findViewById(R.id.trailer_link);
-        mReviews = findViewById(R.id.reviews);
+        mRecyclerviewVideos = findViewById(R.id.recyclerview_videos);
+        mREcyclerviewReviews = findViewById(R.id.recyclerview_reviews);
 
         Intent intentStartedActivity = getIntent();
 
         if (intentStartedActivity.hasExtra("parcel_data")) {
             mMovie = intentStartedActivity.getParcelableExtra("parcel_data");
+            mMovieId = mMovie.getId();
 
             displayMovieInfo();
 
-            if (existsInDatabase(mMovie.getId())) {
+            if (existsInDatabase()) {
                 mAddToFavorite.setChecked(CHECKED);
             } else {
                 mAddToFavorite.setChecked(!CHECKED);
@@ -88,15 +104,30 @@ public class DetailActivity extends AppCompatActivity {
         mMovieVoteAverage.setText(Double.toString(mMovie.getVoteAverage()));
         mMovieReleaseDate.setText(mMovie.getReleaseDate());
 
-        int movieId = mMovie.getId();
-        // TODO fetech videos and revies from urls built with movieId
+        LinearLayoutManager videoLayoutManager
+                = new LinearLayoutManager(this);
+        mRecyclerviewVideos.setLayoutManager(videoLayoutManager);
+        mRecyclerviewVideos.setHasFixedSize(true);
+        mVideoAdapter = new VideoAdapter(this, this);
+        mRecyclerviewVideos.setAdapter(mVideoAdapter);
+
+        fetchVideoData();
+
+        LinearLayoutManager reviewLayoutManager
+                = new LinearLayoutManager(this);
+        mREcyclerviewReviews.setLayoutManager(reviewLayoutManager);
+        mREcyclerviewReviews.setHasFixedSize(true);
+        mReviewAdapter = new ReviewAdapter(this);
+        mREcyclerviewReviews.setAdapter(mReviewAdapter);
+
+        fetchMovieData();
 
     }
 
-    private boolean existsInDatabase(int id) {
+    private boolean existsInDatabase() {
         String[] projection = {MovieEntry.COLUMN_ID};
         String selection = MovieEntry.COLUMN_ID + "=?";
-        String[] selectionArgs = {Integer.toString(id)};
+        String[] selectionArgs = {Integer.toString(mMovieId)};
         Cursor cursor = getContentResolver().query(MovieEntry.CONTENT_URI,
                 projection,
                 selection,
@@ -141,6 +172,13 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     // TODO set up AsyncTaskLoaders for loading videos and reviews
-    // TODO set up RecycleViews and layouts in activity_detail.xml
+
+    private void fetchVideoData() {
+
+    }
+
+    private void fetchMovieData() {
+
+    }
 
 }

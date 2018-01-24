@@ -1,4 +1,4 @@
-package com.example.android.popularmovies;
+package com.example.android.popularmovies.adapters;
 
 import android.content.Context;
 import android.net.Uri;
@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.example.android.popularmovies.R;
 import com.example.android.popularmovies.data.Movie;
 import com.example.android.popularmovies.utilities.NetworkUtils;
 import com.squareup.picasso.Picasso;
@@ -32,7 +33,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
     @Override
     public MovieAdapterViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context context = parent.getContext();
-        int layoutIdForListItem = R.layout.list_item;
+        int layoutIdForListItem = R.layout.movie_list_item;
         LayoutInflater inflater = LayoutInflater.from(context);
         boolean shouldAttachToParentImmediately = false;
 
@@ -74,7 +75,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
 
         public MovieAdapterViewHolder(View view) {
             super(view);
-            mPosterImageView = view.findViewById(R.id.iv_list_item);
+            mPosterImageView = view.findViewById(R.id.movie_list_item);
             view.setOnClickListener(this);
         }
 
