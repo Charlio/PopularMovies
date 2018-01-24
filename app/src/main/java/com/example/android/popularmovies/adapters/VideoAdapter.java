@@ -44,7 +44,7 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoAdapter
             return;
         }
         Video video = mVideoData.get(position);
-        holder.mURLTextView.setText(video.getUrl().toString());
+        holder.mVideoNameTextView.setText(video.getName());
     }
 
     @Override
@@ -66,11 +66,11 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoAdapter
     }
 
     public class VideoAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        public final TextView mURLTextView;
+        public final TextView mVideoNameTextView;
 
         public VideoAdapterViewHolder(View view) {
             super(view);
-            mURLTextView = view.findViewById(R.id.video_list_item);
+            mVideoNameTextView = view.findViewById(R.id.video_list_item);
             view.setOnClickListener(this);
         }
 

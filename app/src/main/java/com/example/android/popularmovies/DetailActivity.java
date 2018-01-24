@@ -1,5 +1,6 @@
 package com.example.android.popularmovies;
 
+import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
@@ -331,7 +332,15 @@ public class DetailActivity extends AppCompatActivity implements
 
     @Override
     public void onClick(Video singleVideo) {
-        // TODO open intent to start trailers on youtube
+        try {
+            Intent myIntent = new Intent(Intent.ACTION_VIEW,
+                    Uri.parse(singleVideo.getUrl().toString()));
+            startActivity(myIntent);
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(this, "No application can handle this request.",
+                    Toast.LENGTH_LONG).show();
+            e.printStackTrace();
+        }
     }
 
     private void showMovieDataView() {

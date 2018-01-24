@@ -42,7 +42,8 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewAdap
             return;
         }
         Review review = mReviewData.get(position);
-        holder.mReviewTextView.setText(review.getAuthor() + ": " + review.getContent());
+        holder.mReviewerTextView.setText(review.getAuthor());
+        holder.mReviewTextView.setText(review.getContent());
     }
 
     @Override
@@ -61,10 +62,12 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewAdap
 
     public class ReviewAdapterViewHolder extends RecyclerView.ViewHolder {
         public final TextView mReviewTextView;
+        public final TextView mReviewerTextView;
 
         public ReviewAdapterViewHolder(View view) {
             super(view);
             mReviewTextView = view.findViewById(R.id.review_list_item);
+            mReviewerTextView = view.findViewById(R.id.textViewReviewer);
         }
     }
 }

@@ -10,4 +10,26 @@
     <string name="action_favorite_list">Show Favorites</string>
 
     <string name="checkbox_favorite">Add to Favorites</string>
+
+    <string name="poster">Movie Poster</string>
+
+    <string name="movie_title">movie title</string>
+
+    <string name="release_date">release date</string>
+
+    <string name="vote_average">average vote</string>
+
+    <string name="overview_label">Overview</string>
+
+    <string name="overview">In a small town in Maine, seven children known as The Losers Club come face to face with life problems, bullies and a monster that takes the shape of a clown called Pennywise.</string>
+
+    <string name="videos_label">Trailers (click to watch)</string>
+
+    <string name="reviews_label">Reviews</string>
+
+    <string name="trailer">Trailer</string>
+
+    <string name="reviewer">Reviewer</string>
+
+    <string name="review">Review</string>
 </resources>
