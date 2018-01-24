@@ -1,6 +1,7 @@
 package com.example.android.popularmovies.utilities;
 
 import android.net.Uri;
+import android.util.Log;
 
 import com.example.android.popularmovies.data.Movie;
 import com.example.android.popularmovies.data.Review;
@@ -64,6 +65,8 @@ public final class OpenJsonUtils {
         final String NAME = "name";
         final String SITE = "site";
         final String YOUTUBE = "YouTube";
+
+        Log.v(OpenJsonUtils.class.getSimpleName(), "vidoes json string: " + videosJsonString);
         /*
          * youtube link example: https://www.youtube.com/watch?v=xKJmEC5ieOk
          * where xKJmEC5ieOk is the key

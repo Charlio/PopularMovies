@@ -12,6 +12,7 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.ImageView;
@@ -82,6 +83,8 @@ public class DetailActivity extends AppCompatActivity implements
         mAddToFavorite = findViewById(R.id.favorite_checkbox);
         mRecyclerviewVideos = findViewById(R.id.recyclerview_videos);
         mREcyclerviewReviews = findViewById(R.id.recyclerview_reviews);
+        mErrorMessageDisplay = findViewById(R.id.detail_tv_error_message_display);
+        mLoadingIndicator = findViewById(R.id.detail_pb_loading_indicator);
 
         Intent intentStartedActivity = getIntent();
 
@@ -126,7 +129,7 @@ public class DetailActivity extends AppCompatActivity implements
             @Override
             protected void onStartLoading() {
                 mLoadingIndicator.setVisibility(View.VISIBLE);
-                if (mParsedResults != null) {
+                if (mParsedResults[0] != null && mParsedResults[1] != null) {
                     deliverResult(mParsedResults);
                 } else {
                     forceLoad();
@@ -162,10 +165,14 @@ public class DetailActivity extends AppCompatActivity implements
                 } else {
                     URL videosQueryUrl = NetworkUtils.buildMovieVideosUrl(mMovieId);
                     URL reviewsQueryUrl = NetworkUtils.buildMovieReviewsUrl(mMovieId);
+
+                    Log.v(TAG, "videos query url: " + videosQueryUrl);
+                    Log.v(TAG, "reviews query url: " + reviewsQueryUrl);
+
                     try {
                         String videoJsonString = NetworkUtils.getResponseFromHttpUrl(videosQueryUrl);
                         String reviewJsonString = NetworkUtils.getResponseFromHttpUrl(reviewsQueryUrl);
-                        String[] combinedJsonStrings = {videoJsonString, reviewJsonString};
+                        String[] combinedJsonStrings = new String[]{videoJsonString, reviewJsonString};
                         return combinedJsonStrings;
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -184,6 +191,7 @@ public class DetailActivity extends AppCompatActivity implements
 
     private String[] fetchVideosAndReviewsFromDatabase(Cursor cursor) {
         if (cursor == null || cursor.getCount() == 0) {
+            Log.v(TAG, "null cursor from database");
             return null;
         }
 
@@ -195,7 +203,7 @@ public class DetailActivity extends AppCompatActivity implements
         String reviewJsonString = cursor.getString(reviewJsonStringId);
         cursor.close();
 
-        String[] videosAndReviews = {videoJsonString, reviewJsonString};
+        String[] videosAndReviews = new String[]{videoJsonString, reviewJsonString};
 
         return videosAndReviews;
     }
@@ -203,7 +211,7 @@ public class DetailActivity extends AppCompatActivity implements
     @Override
     public void onLoadFinished(Loader<String[]> loader, String[] data) {
         mLoadingIndicator.setVisibility(View.INVISIBLE);
-        if (data == null) {
+        if (data == null || data[0] == null || data[1] == null) {
             showErrorMessage();
         } else {
             showMovieDataView();
@@ -236,15 +244,18 @@ public class DetailActivity extends AppCompatActivity implements
         mMovieVoteAverage.setText(Double.toString(mMovie.getVoteAverage()));
         mMovieReleaseDate.setText(mMovie.getReleaseDate());
 
+        int recyclerViewOrientation = LinearLayoutManager.VERTICAL;
+        boolean shouldReverseLayout = false;
+
         LinearLayoutManager videoLayoutManager
-                = new LinearLayoutManager(this);
+                = new LinearLayoutManager(this, recyclerViewOrientation, shouldReverseLayout);
         mRecyclerviewVideos.setLayoutManager(videoLayoutManager);
         mRecyclerviewVideos.setHasFixedSize(true);
         mVideoAdapter = new VideoAdapter(this, this);
         mRecyclerviewVideos.setAdapter(mVideoAdapter);
 
         LinearLayoutManager reviewLayoutManager
-                = new LinearLayoutManager(this);
+                = new LinearLayoutManager(this, recyclerViewOrientation, shouldReverseLayout);
         mREcyclerviewReviews.setLayoutManager(reviewLayoutManager);
         mREcyclerviewReviews.setHasFixedSize(true);
         mReviewAdapter = new ReviewAdapter(this);
