@@ -15,10 +15,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
-/**
- * Created by chali on 1/14/2018.
- */
-
 public final class OpenJsonUtils {
     public static ArrayList<Movie> getMovieArrayListFromJsonString(String movieJsonString)
             throws JSONException {

@@ -3,10 +3,6 @@ package com.example.android.popularmovies.data;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-/**
- * Created by chali on 1/21/2018.
- */
-
 public class Movie implements Parcelable {
     public static final Parcelable.Creator<Movie> CREATOR = new Parcelable.Creator<Movie>() {
 

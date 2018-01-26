@@ -12,10 +12,6 @@ import com.example.android.popularmovies.data.Video;
 
 import java.util.ArrayList;
 
-/**
- * Created by chali on 1/23/2018.
- */
-
 public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoAdapterViewHolder> {
 
     private final Context context;
@@ -32,7 +28,7 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoAdapter
         Context context = parent.getContext();
         int layoutIdForListItem = R.layout.video_list_item;
         LayoutInflater inflater = LayoutInflater.from(context);
-        boolean shouldAttachToParentImmediately = false;
+        final boolean shouldAttachToParentImmediately = false;
 
         View view = inflater.inflate(layoutIdForListItem, parent, shouldAttachToParentImmediately);
         return new VideoAdapterViewHolder(view);

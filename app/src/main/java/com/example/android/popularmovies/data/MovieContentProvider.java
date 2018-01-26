@@ -13,19 +13,15 @@ import android.support.annotation.Nullable;
 
 import static com.example.android.popularmovies.data.MovieContract.MovieEntry.TABLE_NAME;
 
-/**
- * Created by chali on 1/21/2018.
- */
-
 public class MovieContentProvider extends ContentProvider {
 
-    public static final int MOVIES = 100;
-    public static final int MOVIES_WITH_ID = 101;
+    private static final int MOVIES = 100;
+    private static final int MOVIES_WITH_ID = 101;
 
     private static final UriMatcher sUriMatcher = buildUriMatcher();
     private MovieDbHelper mMovieDbHelper;
 
-    public static UriMatcher buildUriMatcher() {
+    private static UriMatcher buildUriMatcher() {
         UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         uriMatcher.addURI(MovieContract.AUTHORITY, MovieContract.PATH_MOVIES, MOVIES);
         uriMatcher.addURI(MovieContract.AUTHORITY, MovieContract.PATH_MOVIES + "/#", MOVIES_WITH_ID);

@@ -13,15 +13,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
 
-/**
- * Created by chali on 1/14/2018.
- */
-
 public final class NetworkUtils {
 
-    public static final int SORT_ID_POPULARITY = 0;
+    private static final int SORT_ID_POPULARITY = 0;
 
-    public static final int SORT_ID_RATING = 1;
     private static final String TAG = NetworkUtils.class.getSimpleName();
 
     private static final String BASE_MOVIE_IMAGE_URL =

@@ -6,10 +6,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import com.example.android.popularmovies.data.MovieContract.MovieEntry;
 
-/**
- * Created by chali on 1/21/2018.
- */
-
 public class MovieDbHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "moviesDb.db";

@@ -1,9 +1,5 @@
 package com.example.android.popularmovies.data;
 
-/**
- * Created by chali on 1/23/2018.
- */
-
 public class Review {
     private String mAuthor;
     private String mContent;

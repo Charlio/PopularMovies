@@ -36,10 +36,6 @@ import org.json.JSONException;
 import java.net.URL;
 import java.util.ArrayList;
 
-/**
- * Created by chali on 1/14/2018.
- */
-
 public class DetailActivity extends AppCompatActivity implements
         VideoAdapter.VideoAdapterOnClickHandler,
         LoaderManager.LoaderCallbacks<String[]> {
@@ -173,8 +169,7 @@ public class DetailActivity extends AppCompatActivity implements
                     try {
                         String videoJsonString = NetworkUtils.getResponseFromHttpUrl(videosQueryUrl);
                         String reviewJsonString = NetworkUtils.getResponseFromHttpUrl(reviewsQueryUrl);
-                        String[] combinedJsonStrings = new String[]{videoJsonString, reviewJsonString};
-                        return combinedJsonStrings;
+                        return new String[]{videoJsonString, reviewJsonString};
                     } catch (Exception e) {
                         e.printStackTrace();
                         return null;
@@ -204,9 +199,8 @@ public class DetailActivity extends AppCompatActivity implements
         String reviewJsonString = cursor.getString(reviewJsonStringId);
         cursor.close();
 
-        String[] videosAndReviews = new String[]{videoJsonString, reviewJsonString};
+        return new String[]{videoJsonString, reviewJsonString};
 
-        return videosAndReviews;
     }
 
     @Override
@@ -246,7 +240,7 @@ public class DetailActivity extends AppCompatActivity implements
         mMovieReleaseDate.setText(mMovie.getReleaseDate());
 
         int recyclerViewOrientation = LinearLayoutManager.VERTICAL;
-        boolean shouldReverseLayout = false;
+        final boolean shouldReverseLayout = false;
 
         LinearLayoutManager videoLayoutManager
                 = new LinearLayoutManager(this, recyclerViewOrientation, shouldReverseLayout);

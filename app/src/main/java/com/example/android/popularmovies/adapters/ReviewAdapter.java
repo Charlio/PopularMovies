@@ -12,10 +12,6 @@ import com.example.android.popularmovies.data.Review;
 
 import java.util.ArrayList;
 
-/**
- * Created by chali on 1/23/2018.
- */
-
 public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewAdapterViewHolder> {
 
     private final Context context;
@@ -30,7 +26,7 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewAdap
         Context context = parent.getContext();
         int layoutIdForListItem = R.layout.review_list_item;
         LayoutInflater inflater = LayoutInflater.from(context);
-        boolean shouldAttachToParentImmediately = false;
+        final boolean shouldAttachToParentImmediately = false;
 
         View view = inflater.inflate(layoutIdForListItem, parent, shouldAttachToParentImmediately);
         return new ReviewAdapter.ReviewAdapterViewHolder(view);

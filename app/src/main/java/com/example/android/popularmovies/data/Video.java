@@ -2,10 +2,6 @@ package com.example.android.popularmovies.data;
 
 import java.net.URL;
 
-/**
- * Created by chali on 1/23/2018.
- */
-
 public class Video {
     private String mName;
     private URL mUrl;

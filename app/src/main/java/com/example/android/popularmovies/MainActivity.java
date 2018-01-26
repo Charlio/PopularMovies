@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
@@ -37,12 +38,13 @@ public class MainActivity extends AppCompatActivity implements
     private static final int SORT_BY_RATING = 1;
     private static final int FETCH_BY_DATABASE = 2;
     private static final String SEARCH_QUERY_FETCH_METHOD_EXTRA = "fetch";
+    private static final String SAVED_LAYOUT_MANAGER = "saved_layout_manager";
     private RecyclerView mRecyclerView;
     private MovieAdapter mMovieAdapter;
     private TextView mErrorMessageDisplay;
     private ProgressBar mLoadingIndicator;
     private int mFetchMethod;
-
+    private Parcelable layoutManagerSavedState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,24 +54,40 @@ public class MainActivity extends AppCompatActivity implements
         mErrorMessageDisplay = findViewById(R.id.tv_error_message_display);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
-        if (savedInstanceState != null &&
-                savedInstanceState.containsKey(SEARCH_QUERY_FETCH_METHOD_EXTRA)) {
-            mFetchMethod = savedInstanceState.getInt(SEARCH_QUERY_FETCH_METHOD_EXTRA);
-        } else {
-            mFetchMethod = SORT_BY_POPULARITY;
-        }
-
         mRecyclerView = findViewById(R.id.recyclerview_movie);
         int numberOfColumns = getNumberOfColumns();
         GridLayoutManager layoutManager
                 = new GridLayoutManager(this, numberOfColumns);
+
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey(SAVED_LAYOUT_MANAGER)) {
+                layoutManagerSavedState = savedInstanceState.getParcelable(SAVED_LAYOUT_MANAGER);
+            }
+            //if (savedInstanceState.containsKey(SAVED_MOVIE_DATA)) {
+            //  mParsedMovieResults = savedInstanceState.getParcelableArrayList(SAVED_MOVIE_DATA);
+            //}
+            if (savedInstanceState.containsKey(SEARCH_QUERY_FETCH_METHOD_EXTRA)) {
+                mFetchMethod = savedInstanceState.getInt(SEARCH_QUERY_FETCH_METHOD_EXTRA);
+            }
+        }
+
         mRecyclerView.setLayoutManager(layoutManager);
+        restoreLayoutManagerPosition();
+
         mRecyclerView.setHasFixedSize(true);
         mMovieAdapter = new MovieAdapter(this, this);
         mRecyclerView.setAdapter(mMovieAdapter);
 
         fetchMovieData();
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mFetchMethod == FETCH_BY_DATABASE) {
+            fetchMovieData();
+        }
     }
 
     private int getNumberOfColumns() {
@@ -84,14 +102,14 @@ public class MainActivity extends AppCompatActivity implements
 
         return new AsyncTaskLoader<ArrayList<Movie>>(this) {
 
-            ArrayList<Movie> mParsedMovieResults;
+            private ArrayList<Movie> mParsedMovieResults;
 
             @Override
             protected void onStartLoading() {
-                mLoadingIndicator.setVisibility(View.VISIBLE);
                 if (mParsedMovieResults != null) {
                     deliverResult(mParsedMovieResults);
                 } else {
+                    mLoadingIndicator.setVisibility(View.VISIBLE);
                     forceLoad();
                 }
             }
@@ -124,11 +142,7 @@ public class MainActivity extends AppCompatActivity implements
                     URL searchQueryUrl = NetworkUtils.buildMovieDataUrl(fetchById);
                     try {
                         String movieResultJson = NetworkUtils.getResponseFromHttpUrl(searchQueryUrl);
-
-                        ArrayList<Movie> parsedMovieResults
-                                = OpenJsonUtils.getMovieArrayListFromJsonString(
-                                movieResultJson);
-                        return parsedMovieResults;
+                        return OpenJsonUtils.getMovieArrayListFromJsonString(movieResultJson);
                     } catch (Exception e) {
                         e.printStackTrace();
                         return null;
@@ -191,6 +205,12 @@ public class MainActivity extends AppCompatActivity implements
             mMovieAdapter.setMovieData(parsedMovieResults);
         }
 
+    }
+
+    private void restoreLayoutManagerPosition() {
+        if (layoutManagerSavedState != null) {
+            mRecyclerView.getLayoutManager().onRestoreInstanceState(layoutManagerSavedState);
+        }
     }
 
     @Override
@@ -269,14 +289,20 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt(SEARCH_QUERY_FETCH_METHOD_EXTRA, mFetchMethod);
+    protected void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putParcelable(SAVED_LAYOUT_MANAGER,
+                mRecyclerView.getLayoutManager().onSaveInstanceState());
+        savedInstanceState.putInt(SEARCH_QUERY_FETCH_METHOD_EXTRA, mFetchMethod);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        mFetchMethod = savedInstanceState.getInt(SEARCH_QUERY_FETCH_METHOD_EXTRA);
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey(SAVED_LAYOUT_MANAGER)) {
+                layoutManagerSavedState = savedInstanceState.getParcelable(SAVED_LAYOUT_MANAGER);
+            }
+        }
     }
 }
