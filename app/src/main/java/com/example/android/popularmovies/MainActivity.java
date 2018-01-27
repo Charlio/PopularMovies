@@ -192,7 +192,6 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onLoaderReset(Loader<ArrayList<Movie>> loader) {
-
     }
 
     @Override
@@ -244,20 +243,18 @@ public class MainActivity extends AppCompatActivity implements
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         layoutManagerSavedState = null;
+        invalidateData();
 
         switch (id) {
             case R.id.action_sort_popular:
-                invalidateData();
                 mFetchMethod = SORT_BY_POPULARITY;
                 fetchMovieData();
                 return true;
             case R.id.action_sort_rating:
-                invalidateData();
                 mFetchMethod = SORT_BY_RATING;
                 fetchMovieData();
                 return true;
             case R.id.action_favorite_list:
-                invalidateData();
                 mFetchMethod = FETCH_BY_DATABASE;
                 fetchMovieData();
                 return true;
