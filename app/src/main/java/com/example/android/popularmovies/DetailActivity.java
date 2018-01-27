@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
@@ -49,6 +50,7 @@ public class DetailActivity extends AppCompatActivity implements
     private static final String FETCH_METHOD = "fetch";
     private static final int API = 0;
     private static final int DATABASE = 1;
+    private static final String SAVED_LAYOUT_MANAGER = "saved_layout_manager";
     private Movie mMovie;
     private int mMovieId;
     private TextView mMovieTitle;
@@ -58,7 +60,7 @@ public class DetailActivity extends AppCompatActivity implements
     private TextView mMoviePlotSynopsis;
     private CheckBox mAddToFavorite;
     private RecyclerView mRecyclerviewVideos;
-    private RecyclerView mREcyclerviewReviews;
+    private RecyclerView mRecyclerviewReviews;
     private String mVideoJsonString = "";
     private String mReviewJsonString = "";
     private VideoAdapter mVideoAdapter;
@@ -66,6 +68,7 @@ public class DetailActivity extends AppCompatActivity implements
     private int fetchFrom;
     private TextView mErrorMessageDisplay;
     private ProgressBar mLoadingIndicator;
+    private Parcelable layoutManagerSavedState;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -79,7 +82,7 @@ public class DetailActivity extends AppCompatActivity implements
         mMoviePlotSynopsis = findViewById(R.id.movie_plot_synopsis);
         mAddToFavorite = findViewById(R.id.favorite_checkbox);
         mRecyclerviewVideos = findViewById(R.id.recyclerview_videos);
-        mREcyclerviewReviews = findViewById(R.id.recyclerview_reviews);
+        mRecyclerviewReviews = findViewById(R.id.recyclerview_reviews);
         mErrorMessageDisplay = findViewById(R.id.detail_tv_error_message_display);
         mLoadingIndicator = findViewById(R.id.detail_pb_loading_indicator);
 
@@ -94,6 +97,12 @@ public class DetailActivity extends AppCompatActivity implements
                 fetchFrom = API;
             }
             mMovieId = mMovie.getId();
+
+            if (savedInstanceState != null) {
+                if (savedInstanceState.containsKey(SAVED_LAYOUT_MANAGER)) {
+                    layoutManagerSavedState = savedInstanceState.getParcelable(SAVED_LAYOUT_MANAGER);
+                }
+            }
 
             displayMovieInfo();
 
@@ -222,6 +231,10 @@ public class DetailActivity extends AppCompatActivity implements
             }
             mVideoAdapter.setVideoData(videos);
             mReviewAdapter.setReviewData(reviews);
+            if (layoutManagerSavedState != null) {
+                mRecyclerviewReviews.getLayoutManager()
+                        .onRestoreInstanceState(layoutManagerSavedState);
+            }
         }
 
     }
@@ -251,10 +264,10 @@ public class DetailActivity extends AppCompatActivity implements
 
         LinearLayoutManager reviewLayoutManager
                 = new LinearLayoutManager(this, recyclerViewOrientation, shouldReverseLayout);
-        mREcyclerviewReviews.setLayoutManager(reviewLayoutManager);
-        mREcyclerviewReviews.setHasFixedSize(true);
+        mRecyclerviewReviews.setLayoutManager(reviewLayoutManager);
+        mRecyclerviewReviews.setHasFixedSize(true);
         mReviewAdapter = new ReviewAdapter(this);
-        mREcyclerviewReviews.setAdapter(mReviewAdapter);
+        mRecyclerviewReviews.setAdapter(mReviewAdapter);
 
         fetchVideoAndReviewData();
 
@@ -340,13 +353,28 @@ public class DetailActivity extends AppCompatActivity implements
     private void showMovieDataView() {
         mErrorMessageDisplay.setVisibility(View.INVISIBLE);
         mRecyclerviewVideos.setVisibility(View.VISIBLE);
-        mREcyclerviewReviews.setVisibility(View.VISIBLE);
+        mRecyclerviewReviews.setVisibility(View.VISIBLE);
     }
 
     private void showErrorMessage() {
         mRecyclerviewVideos.setVisibility(View.INVISIBLE);
-        mREcyclerviewReviews.setVisibility(View.INVISIBLE);
+        mRecyclerviewReviews.setVisibility(View.INVISIBLE);
         mErrorMessageDisplay.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putParcelable(SAVED_LAYOUT_MANAGER,
+                mRecyclerviewReviews.getLayoutManager().onSaveInstanceState());
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if (savedInstanceState.containsKey(SAVED_LAYOUT_MANAGER)) {
+            layoutManagerSavedState = savedInstanceState.getParcelable(SAVED_LAYOUT_MANAGER);
+        }
     }
 
 }

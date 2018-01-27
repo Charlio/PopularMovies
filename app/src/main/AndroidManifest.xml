@@ -22,6 +22,7 @@
         </activity>
         <activity
             android:name=".DetailActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
             android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

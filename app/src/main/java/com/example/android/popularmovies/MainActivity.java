@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -54,40 +55,24 @@ public class MainActivity extends AppCompatActivity implements
         mErrorMessageDisplay = findViewById(R.id.tv_error_message_display);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
+        mFetchMethod = SORT_BY_POPULARITY;
+
         mRecyclerView = findViewById(R.id.recyclerview_movie);
         int numberOfColumns = getNumberOfColumns();
         GridLayoutManager layoutManager
                 = new GridLayoutManager(this, numberOfColumns);
 
-        if (savedInstanceState != null) {
-            if (savedInstanceState.containsKey(SAVED_LAYOUT_MANAGER)) {
-                layoutManagerSavedState = savedInstanceState.getParcelable(SAVED_LAYOUT_MANAGER);
-            }
-            //if (savedInstanceState.containsKey(SAVED_MOVIE_DATA)) {
-            //  mParsedMovieResults = savedInstanceState.getParcelableArrayList(SAVED_MOVIE_DATA);
-            //}
-            if (savedInstanceState.containsKey(SEARCH_QUERY_FETCH_METHOD_EXTRA)) {
-                mFetchMethod = savedInstanceState.getInt(SEARCH_QUERY_FETCH_METHOD_EXTRA);
-            }
-        }
-
         mRecyclerView.setLayoutManager(layoutManager);
-        restoreLayoutManagerPosition();
 
         mRecyclerView.setHasFixedSize(true);
         mMovieAdapter = new MovieAdapter(this, this);
         mRecyclerView.setAdapter(mMovieAdapter);
-
-        fetchMovieData();
-
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (mFetchMethod == FETCH_BY_DATABASE) {
-            fetchMovieData();
-        }
+        fetchMovieData();
     }
 
     private int getNumberOfColumns() {
@@ -118,12 +103,7 @@ public class MainActivity extends AppCompatActivity implements
             public ArrayList<Movie> loadInBackground() {
                 int fetchById;
 
-
-                if (queryBundle == null) {
-                    fetchById = SORT_BY_POPULARITY;
-                } else {
-                    fetchById = queryBundle.getInt(SEARCH_QUERY_FETCH_METHOD_EXTRA);
-                }
+                fetchById = queryBundle.getInt(SEARCH_QUERY_FETCH_METHOD_EXTRA);
 
                 if (fetchById == FETCH_BY_DATABASE) {
                     Cursor cursor;
@@ -139,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements
                     }
                     return fetchAllMoviesFromDatabase(cursor);
                 } else {
+                    Log.v(TAG, "fetch movie id is " + fetchById);
                     URL searchQueryUrl = NetworkUtils.buildMovieDataUrl(fetchById);
                     try {
                         String movieResultJson = NetworkUtils.getResponseFromHttpUrl(searchQueryUrl);
@@ -203,13 +184,9 @@ public class MainActivity extends AppCompatActivity implements
         } else {
             showMovieDataView();
             mMovieAdapter.setMovieData(parsedMovieResults);
-        }
-
-    }
-
-    private void restoreLayoutManagerPosition() {
-        if (layoutManagerSavedState != null) {
-            mRecyclerView.getLayoutManager().onRestoreInstanceState(layoutManagerSavedState);
+            if (layoutManagerSavedState != null) {
+                mRecyclerView.getLayoutManager().onRestoreInstanceState(layoutManagerSavedState);
+            }
         }
     }
 
@@ -266,6 +243,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
+        layoutManagerSavedState = null;
 
         switch (id) {
             case R.id.action_sort_popular:
@@ -299,10 +277,11 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        if (savedInstanceState != null) {
-            if (savedInstanceState.containsKey(SAVED_LAYOUT_MANAGER)) {
-                layoutManagerSavedState = savedInstanceState.getParcelable(SAVED_LAYOUT_MANAGER);
-            }
+        if (savedInstanceState.containsKey(SAVED_LAYOUT_MANAGER)) {
+            layoutManagerSavedState = savedInstanceState.getParcelable(SAVED_LAYOUT_MANAGER);
+        }
+        if (savedInstanceState.containsKey(SEARCH_QUERY_FETCH_METHOD_EXTRA)) {
+            mFetchMethod = savedInstanceState.getInt(SEARCH_QUERY_FETCH_METHOD_EXTRA);
         }
     }
 }
